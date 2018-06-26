@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2026
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalCollectorPro", "SignalCollectorPro\SignalCollectorPro.csproj", "{CD4702F9-73CB-4095-9A7B-C38D3B4D1566}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SerialPortWriter", "SerialPortWriter\SerialPortWriter.csproj", "{062B94E8-BD96-4F32-9AE7-594FB448E639}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SerialPortReader", "..\SignalCollector\SerialPortReader\SerialPortReader.csproj", "{B428127F-A35C-4DFD-9B20-99DEC82F8BC4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CD4702F9-73CB-4095-9A7B-C38D3B4D1566}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CD4702F9-73CB-4095-9A7B-C38D3B4D1566}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CD4702F9-73CB-4095-9A7B-C38D3B4D1566}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CD4702F9-73CB-4095-9A7B-C38D3B4D1566}.Release|Any CPU.Build.0 = Release|Any CPU
+		{062B94E8-BD96-4F32-9AE7-594FB448E639}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{062B94E8-BD96-4F32-9AE7-594FB448E639}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{062B94E8-BD96-4F32-9AE7-594FB448E639}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{062B94E8-BD96-4F32-9AE7-594FB448E639}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B428127F-A35C-4DFD-9B20-99DEC82F8BC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B428127F-A35C-4DFD-9B20-99DEC82F8BC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B428127F-A35C-4DFD-9B20-99DEC82F8BC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B428127F-A35C-4DFD-9B20-99DEC82F8BC4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3725CF69-B128-4BF6-9020-4E795194D4A1}
+	EndGlobalSection
+EndGlobal
