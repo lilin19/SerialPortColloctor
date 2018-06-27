@@ -55,12 +55,14 @@
             this.Length = new System.Windows.Forms.RichTextBox();
             this.SignalLength = new System.Windows.Forms.Label();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.button5 = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
             this.clear = new System.Windows.Forms.Button();
             this.Screen = new System.Windows.Forms.ListView();
-            this.button5 = new System.Windows.Forms.Button();
+            this.button6 = new System.Windows.Forms.Button();
+            this.label8 = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.datagroup.SuspendLayout();
@@ -232,6 +234,8 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.label8);
+            this.groupBox1.Controls.Add(this.button6);
             this.groupBox1.Controls.Add(this.start);
             this.groupBox1.Controls.Add(this.label2);
             this.groupBox1.Controls.Add(this.Ports);
@@ -254,7 +258,7 @@
             this.start.Name = "start";
             this.start.Size = new System.Drawing.Size(75, 23);
             this.start.TabIndex = 14;
-            this.start.Text = "开始接收";
+            this.start.Text = "打开串口";
             this.start.UseVisualStyleBackColor = true;
             this.start.Click += new System.EventHandler(this.start_Click);
             // 
@@ -348,6 +352,15 @@
             this.tabPage2.Text = "数据信息";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
+            // button5
+            // 
+            this.button5.Location = new System.Drawing.Point(20, 264);
+            this.button5.Name = "button5";
+            this.button5.Size = new System.Drawing.Size(75, 32);
+            this.button5.TabIndex = 6;
+            this.button5.Text = "回归参数";
+            this.button5.UseVisualStyleBackColor = true;
+            // 
             // button4
             // 
             this.button4.Location = new System.Drawing.Point(20, 209);
@@ -396,15 +409,25 @@
             this.Screen.TabIndex = 0;
             this.Screen.UseCompatibleStateImageBehavior = false;
             // 
-            // button5
+            // button6
             // 
-            this.button5.Location = new System.Drawing.Point(20, 264);
-            this.button5.Name = "button5";
-            this.button5.Size = new System.Drawing.Size(75, 32);
-            this.button5.TabIndex = 6;
-            this.button5.Text = "回归参数";
-            this.button5.UseVisualStyleBackColor = true;
-
+            this.button6.Location = new System.Drawing.Point(539, 34);
+            this.button6.Name = "button6";
+            this.button6.Size = new System.Drawing.Size(75, 23);
+            this.button6.TabIndex = 15;
+            this.button6.Text = "采集指令";
+            this.button6.UseVisualStyleBackColor = true;
+            this.button6.Click += new System.EventHandler(this.button6_Click);
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(654, 39);
+            this.label8.MaximumSize = new System.Drawing.Size(13, 13);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(13, 13);
+            this.label8.TabIndex = 16;
+            this.label8.Text = "██ ";
             // 
             // Form1
             // 
@@ -464,6 +487,8 @@
         private System.Windows.Forms.Button button4;
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Button button5;
+        private System.Windows.Forms.Button button6;
+        private System.Windows.Forms.Label label8;
     }
 }
 

@@ -68,6 +68,64 @@ namespace SignalCollectorPro
             }
 
         }
+
+        static public void CollectCommand()
+        {
+            byte[] input = new byte[9];
+            input[0] = 0xA6;
+            input[1] = 0x6A;
+            input[2] = 0x05;
+            input[3] = 0x00;
+            input[4] = 0x01;
+            input[5] = 0x01;
+            input[6] = 0x00;
+            input[7] = 0xFF;
+            input[8] = 0xFF;
+
+            _mySerialPort.Write(input, 0, 9);
+        }
+
+        static public void RegularMode(int gap, int wait)
+        {
+            Core.CollectCommand();
+            Thread.Sleep(gap);
+            Core.CollectCommand();
+            Thread.Sleep(gap);
+            Core.CollectCommand();
+            Thread.Sleep(wait);
+            Core.DataCommand();
+        }
+        static public void DataCommand()
+        {
+            byte[] input = new byte[23];
+            input[0] = 0xA6;
+            input[1] = 0x6A;
+            input[2] = 0x13;
+            input[3] = 0x00;
+            input[4] = 0x01;
+            input[5] = 0x01;
+            input[6] = 0x01;
+            //sn
+            input[7] = 0xAA;
+            input[8] = 0xAA;
+            input[9] = 0xAA;
+            input[10] = 0xAA;
+            input[11] = 0xAA;
+            input[12] = 0xAA;
+            input[13] = 0xAA;
+            input[14] = 0xAA;
+            input[15] = 0xAA;
+            input[16] = 0xAA;
+            input[17] = 0xAA;
+            input[18] = 0xAA;
+            input[19] = 0xAA;
+            input[20] = 0xAA;
+
+            input[21] = 0xFF;
+            input[22] = 0xFF;
+
+            _mySerialPort.Write(input, 0, 23);
+        }
     }
 }
 

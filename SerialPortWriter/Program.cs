@@ -8,7 +8,6 @@ using System.Threading;
 using System.Timers;
 
 
-
 namespace SerialPortWriter
 {
     class Program
@@ -18,9 +17,6 @@ namespace SerialPortWriter
        
         static void Main(string[] args)
         {
-            
-            
-
             _mySerialPort.BaudRate = 9600;
             _mySerialPort.Parity = Parity.None;
             _mySerialPort.StopBits = StopBits.One;
@@ -33,11 +29,6 @@ namespace SerialPortWriter
             _t.Enabled = true;
             _t.Start();
 
-           
-            
-           
-            
-           
             Console.ReadKey();
             _t.Stop();
             _t.Dispose();
@@ -46,9 +37,6 @@ namespace SerialPortWriter
 
             private static void SetReceiver()
             {
-              
-
-                
                 _mySerialPort.DataReceived += new SerialDataReceivedEventHandler(DataReceivedHandler);
                 Console.ReadKey();
                 _mySerialPort.Close();
@@ -61,8 +49,6 @@ namespace SerialPortWriter
                 Thread.Sleep(50);
 
                 SerialPort sp = (SerialPort)receiver;
-
-
                 byte[] tst = new byte[sp.BytesToRead];
                 //string get = sp.ReadExisting();
                 sp.Read(tst, 0, sp.BytesToRead);
@@ -85,7 +71,6 @@ namespace SerialPortWriter
 
             static public void FileWrite(string path, string hex)
             {
-
                 FileStream myStream = new FileStream(@"test.txt", FileMode.Append, FileAccess.Write);
                 StreamWriter sWriter = new StreamWriter(myStream);
                 sWriter.WriteLine(DateTime.Now + " Receive: " + hex);

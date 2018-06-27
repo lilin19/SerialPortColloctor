@@ -51,8 +51,7 @@ namespace SignalCollectorPro
             Screen.Columns.Add("实际测数", 100, HorizontalAlignment.Center);
             Screen.Columns.Add("实际温度", 200, HorizontalAlignment.Center);
             GetList();
-            //Core.SetReceiver("COM1");
-            //Core._mySerialPort.Open();
+            label8.ForeColor = Color.Red;
         }
 
 
@@ -63,7 +62,10 @@ namespace SignalCollectorPro
             Mea.Text = BusinessLogics.GetCurrentMeasurement();
             Temp.Text = BusinessLogics.GetCurrentTemperature();
             SignalContent.Text = BusinessLogics.GetCurrentSignal();
-
+            if (Core._mySerialPort.IsOpen == true)
+            {
+                label8.ForeColor = Color.LightGreen;
+            }
 
         }
 
@@ -246,6 +248,11 @@ namespace SignalCollectorPro
             chart2.Show();
         }
 
+        private void button6_Click(object sender, EventArgs e)
+        {
+            Core.RegularMode(100,3000);
+
+        }
     }
 
 }
