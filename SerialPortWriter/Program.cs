@@ -88,8 +88,7 @@ namespace SerialPortWriter
                 return 0;
             }
 
-           
-
+          
         private static void OnTimedEvent(Object source, ElapsedEventArgs e)
         {
                 byte[] input = new byte[31];

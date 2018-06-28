@@ -13,8 +13,11 @@ namespace SignalCollectorPro
     class Core
     {
         public static SerialPort _mySerialPort = new SerialPort("COM5");
-        public static void SetReceiver(string port)
+        public static string port;
+
+        public static void SetReceiver(string setport)
         {
+            port = setport;
             _mySerialPort = new SerialPort(port);
             _mySerialPort.BaudRate = 9600;
             _mySerialPort.Parity = Parity.None;
@@ -25,8 +28,12 @@ namespace SignalCollectorPro
            // _mySerialPort.Handshake = Handshake.RequestToSend;
 
         }
-      
 
+        public static void StartListen(SerialPort port, SerialDataReceivedEventHandler handler)
+        {
+            port.DataReceived += handler;
+
+        }
 
         static public void FileWrite(string path, string hex)
         {
@@ -69,8 +76,9 @@ namespace SignalCollectorPro
 
         }
 
-        static public void CollectCommand()
+        static public void CollectCommand(SerialPort port)
         {
+
             byte[] input = new byte[9];
             input[0] = 0xA6;
             input[1] = 0x6A;
@@ -82,20 +90,10 @@ namespace SignalCollectorPro
             input[7] = 0xFF;
             input[8] = 0xFF;
 
-            _mySerialPort.Write(input, 0, 9);
+            port.Write(input, 0, 9);
         }
 
-        static public void RegularMode(int gap, int wait)
-        {
-            Core.CollectCommand();
-            Thread.Sleep(gap);
-            Core.CollectCommand();
-            Thread.Sleep(gap);
-            Core.CollectCommand();
-            Thread.Sleep(wait);
-            Core.DataCommand();
-        }
-        static public void DataCommand()
+        static public void DataCommand(SerialPort port)
         {
             byte[] input = new byte[23];
             input[0] = 0xA6;
@@ -124,8 +122,10 @@ namespace SignalCollectorPro
             input[21] = 0xFF;
             input[22] = 0xFF;
 
-            _mySerialPort.Write(input, 0, 23);
+            port.Write(input, 0, 23);
         }
+
+
     }
 }
 

@@ -1,5 +1,4 @@
-﻿using SignalCollectorPro.Library;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -9,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using static SignalCollectorPro.DataObjects;
 
@@ -19,6 +19,12 @@ namespace SignalCollectorPro
         static System.Windows.Forms.Timer _mt = new System.Windows.Forms.Timer();
         static List<double> _temperature = new List<double>();
         static List<string> _time = new List<string>();
+        bool response;
+        public async Task Send(string port)
+        {
+            BusinessLogics.ConnectPort(port);
+            response = await Task.Factory.StartNew(()=>SerialPortService.RegularMode(100, 3000, 1000));
+        }
         public Form1()
         {
             InitializeComponent();
@@ -89,48 +95,7 @@ namespace SignalCollectorPro
             }
         }
 
-        private void DataReceivedHandler(
-            object receiver,
-            SerialDataReceivedEventArgs e)
-        {
-            Thread.Sleep(500);
-            SerialPort sp = (SerialPort)receiver;
-            byte[] tst = new byte[sp.BytesToRead];
-            //string get = sp.ReadExisting();
-            sp.Read(tst, 0, sp.BytesToRead);
-            //Int16 get = BitConverter.ToInt16(tst,0);     
-            string hexValue = BitConverter.ToString(tst);
-            if (tst.Length != 0)
-            {
-                BusinessLogics.SetCurrentSignalTime();
-                BusinessLogics.SetCurrentSignalLength(tst.Length);
-                //Length.Text = tst.Length.ToString();
-                string y = "";
-                for (int i = 0; i < tst.Length; i++)
-                {
-                    y += " " + tst[i].ToString();
-                }
-                BusinessLogics.SetCurrentSignal(hexValue);
-            }
-            if (hexValue != "")
-            {
-                BusinessLogics.WriteLog(hexValue);
-            }
-
-            if (tst.Length != 0)
-            {
-                Data d = BusinessLogics.GetData(tst);
-                if (d != null)
-                {
-                    _temperature.Add(double.Parse(BusinessLogics.GetCurrentTemperature()));
-                    _time.Add(BusinessLogics.GetCurrentSignalTime());
-                    BusinessLogics.SetCurrentData(d);
-                }
-            }
-
-
-
-        }
+       
 
         private void start_Click(object sender, EventArgs e)
         {
@@ -149,7 +114,7 @@ namespace SignalCollectorPro
                 {
 
                 }
-                BusinessLogics.GetPort().DataReceived += new SerialDataReceivedEventHandler(DataReceivedHandler);
+                SerialPortService.PeriodicListen();
             }
             else
             {
@@ -244,14 +209,56 @@ namespace SignalCollectorPro
 
         private void button3_Click_1(object sender, EventArgs e)
         {
-            Temp chart2 = new Temp(_temperature, _time);
+            Temp chart2 = new Temp(SerialPortService._temperature, SerialPortService._time);
             chart2.Show();
         }
 
         private void button6_Click(object sender, EventArgs e)
         {
-            Core.RegularMode(100,3000);
+            string port = Ports.SelectedItem.ToString();
+            int portindex = Ports.SelectedIndex;
+            senden(port, portindex);
+          
 
+        }
+
+        private void senden(string port, int portindex)
+        {
+            bool response = false;
+            if (Core._mySerialPort != null)
+            {
+                Core._mySerialPort.Close();
+            }
+            if (portindex > -1)
+            {
+                MessageBox.Show(String.Format("向串口 '{0}' 发送采集指令", port));
+                try
+                {
+                    BusinessLogics.ConnectPort(port);
+                    response = SerialPortService.RegularMode(100, 3000, 1000);
+
+                    MessageBox.Show(response.ToString());
+                    if (response)
+                    {
+                        label8.ForeColor = Color.Black;
+                    }
+                    else
+                    {
+                        MessageBox.Show(response.ToString());
+                        MessageBox.Show("timeout");
+                    }
+
+                }
+                catch (Exception)
+                {
+
+                }
+                SerialPortService.PeriodicListen();
+            }
+            else
+            {
+                MessageBox.Show("Please select a port first");
+            }
         }
     }
 
