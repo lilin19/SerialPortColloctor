@@ -20,11 +20,7 @@ namespace SignalCollectorPro
         static List<double> _temperature = new List<double>();
         static List<string> _time = new List<string>();
         bool response;
-        public async Task Send(string port)
-        {
-            BusinessLogics.ConnectPort(port);
-            response = await Task.Factory.StartNew(()=>SerialPortService.RegularMode(100, 3000, 1000));
-        }
+
         public Form1()
         {
             InitializeComponent();
@@ -68,10 +64,13 @@ namespace SignalCollectorPro
             Mea.Text = BusinessLogics.GetCurrentMeasurement();
             Temp.Text = BusinessLogics.GetCurrentTemperature();
             SignalContent.Text = BusinessLogics.GetCurrentSignal();
+            SNCode.Text = BusinessLogics.GetCurrentSN();
+            state.Text = BusinessLogics.GetCurrentState();
             if (Core._mySerialPort.IsOpen == true)
             {
                 label8.ForeColor = Color.LightGreen;
             }
+
 
         }
 
@@ -244,7 +243,6 @@ namespace SignalCollectorPro
                     }
                     else
                     {
-                        MessageBox.Show(response.ToString());
                         MessageBox.Show("timeout");
                     }
 

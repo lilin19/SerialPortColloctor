@@ -21,6 +21,27 @@ namespace SignalCollectorPro
             { return "无数据"; }
         }
 
+        public static string GetCurrentState()
+        {
+            if (DataCentre.CurrentData != null)
+            {
+                return DataCentre.CurrentData._error.ToString();
+            }
+            else
+            { return "无数据"; }
+        }
+
+
+        public static string GetCurrentSN()
+        {
+            if (DataCentre.CurrentSN != null)
+            {
+                return DataCentre.CurrentSN.sn;
+            }
+            else
+            { return "无数据"; }
+        }
+
         public static string GetCurrentMeasurement()
         {
             if (DataCentre.CurrentData != null)
@@ -48,8 +69,6 @@ namespace SignalCollectorPro
             }
             else
             { return "无数据"; }
-
-
         }
 
 
@@ -83,6 +102,11 @@ namespace SignalCollectorPro
             DataCentre.CurrentData = input;
         }
 
+        public static void SetCurrentSN(SN s)
+        {
+            DataCentre.CurrentSN = s;
+        }
+
         public static void SetCurrentSignal(string input)
         {
             DataCentre.CurrentSignal = input;
@@ -111,6 +135,11 @@ namespace SignalCollectorPro
         public static Data GetData(byte[] tst)
         {
             return Core.GetData(tst);
+        }
+
+        public static SN GetSN(byte[] tst)
+        {
+            return Core.GetSN(tst);
         }
 
         public static void WriteLog(string hex)
@@ -210,8 +239,6 @@ namespace SignalCollectorPro
                 
             }
         }
-
-        
 
         public static SerialPort GetPort()
         {

@@ -57,11 +57,14 @@ namespace SignalCollectorPro
             }
         }
 
-        class SN
+        public class SN
         {
-            byte[] _sensorModel = new byte[4];
-            byte[] _productionDate = new byte[6];
-            byte[] _numberical = new byte[4];
+            public string sn;
+
+            public SN(string sn)
+            {
+                this.sn = sn;
+            }
         }
 
     }

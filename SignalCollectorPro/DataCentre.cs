@@ -13,5 +13,6 @@ namespace SignalCollectorPro
         public static string CurrentSignal;
         public static int CurrentSignalLength;
         public static DateTime CurrentSignalTime;
+        public static SN CurrentSN;
     }
 }

@@ -11,6 +11,8 @@ namespace SignalCollectorPro
 {
     class SerialPortService
     {
+        
+
         private static ManualResetEvent _collectDone = new ManualResetEvent(false);
         public static List<double> _temperature = new List<double>();
         public static List<string> _time = new List<string>();
@@ -86,6 +88,8 @@ namespace SignalCollectorPro
                 _collectDone.Set();
             }
             
+            
+            
         }
 
         private static void PeriodicDataReceivedHandler(
@@ -119,11 +123,13 @@ namespace SignalCollectorPro
             if (tst.Length != 0)
             {
                 Data d = BusinessLogics.GetData(tst);
+                SN s = BusinessLogics.GetSN(tst);
                 if (d != null)
                 {
-                    _temperature.Add(double.Parse(BusinessLogics.GetCurrentTemperature()));
+                    _temperature.Add(double.Parse(d.GetTemperature()));
                     _time.Add(BusinessLogics.GetCurrentSignalTime());
                     BusinessLogics.SetCurrentData(d);
+                    BusinessLogics.SetCurrentSN(s);
                 }
             }
 

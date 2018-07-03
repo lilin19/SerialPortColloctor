@@ -45,6 +45,8 @@
             this.label4 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.label9 = new System.Windows.Forms.Label();
+            this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.label8 = new System.Windows.Forms.Label();
             this.button6 = new System.Windows.Forms.Button();
             this.start = new System.Windows.Forms.Button();
@@ -63,8 +65,10 @@
             this.button2 = new System.Windows.Forms.Button();
             this.clear = new System.Windows.Forms.Button();
             this.Screen = new System.Windows.Forms.ListView();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
-            this.label9 = new System.Windows.Forms.Label();
+            this.label10 = new System.Windows.Forms.Label();
+            this.SNCode = new System.Windows.Forms.RichTextBox();
+            this.label11 = new System.Windows.Forms.Label();
+            this.state = new System.Windows.Forms.RichTextBox();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.datagroup.SuspendLayout();
@@ -98,6 +102,8 @@
             // 
             // datagroup
             // 
+            this.datagroup.Controls.Add(this.SNCode);
+            this.datagroup.Controls.Add(this.label10);
             this.datagroup.Controls.Add(this.button3);
             this.datagroup.Controls.Add(this.Save);
             this.datagroup.Controls.Add(this.groupBox3);
@@ -135,9 +141,9 @@
             this.groupBox3.Controls.Add(this.Temp);
             this.groupBox3.Controls.Add(this.label6);
             this.groupBox3.Controls.Add(this.label7);
-            this.groupBox3.Location = new System.Drawing.Point(331, 19);
+            this.groupBox3.Location = new System.Drawing.Point(295, 56);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(270, 162);
+            this.groupBox3.Size = new System.Drawing.Size(270, 125);
             this.groupBox3.TabIndex = 1;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "℃";
@@ -184,9 +190,9 @@
             this.groupBox2.Controls.Add(this.label5);
             this.groupBox2.Controls.Add(this.label4);
             this.groupBox2.Controls.Add(this.label3);
-            this.groupBox2.Location = new System.Drawing.Point(6, 19);
+            this.groupBox2.Location = new System.Drawing.Point(6, 56);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(283, 162);
+            this.groupBox2.Size = new System.Drawing.Size(283, 125);
             this.groupBox2.TabIndex = 0;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "CM";
@@ -236,6 +242,8 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.state);
+            this.groupBox1.Controls.Add(this.label11);
             this.groupBox1.Controls.Add(this.label9);
             this.groupBox1.Controls.Add(this.comboBox1);
             this.groupBox1.Controls.Add(this.label8);
@@ -255,6 +263,23 @@
             this.groupBox1.TabIndex = 6;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "当前串口信息：";
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(270, 67);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(67, 13);
+            this.label9.TabIndex = 18;
+            this.label9.Text = "工作模式：";
+            // 
+            // comboBox1
+            // 
+            this.comboBox1.FormattingEnabled = true;
+            this.comboBox1.Location = new System.Drawing.Point(331, 63);
+            this.comboBox1.Name = "comboBox1";
+            this.comboBox1.Size = new System.Drawing.Size(121, 21);
+            this.comboBox1.TabIndex = 17;
             // 
             // label8
             // 
@@ -433,22 +458,42 @@
             this.Screen.TabIndex = 0;
             this.Screen.UseCompatibleStateImageBehavior = false;
             // 
-            // comboBox1
+            // label10
             // 
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Location = new System.Drawing.Point(331, 63);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(121, 21);
-            this.comboBox1.TabIndex = 17;
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(54, 28);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(46, 13);
+            this.label10.TabIndex = 6;
+            this.label10.Text = "SN码：";
             // 
-            // label9
+            // SNCode
             // 
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(270, 67);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(67, 13);
-            this.label9.TabIndex = 18;
-            this.label9.Text = "工作模式：";
+            this.SNCode.Location = new System.Drawing.Point(92, 19);
+            this.SNCode.Multiline = false;
+            this.SNCode.Name = "SNCode";
+            this.SNCode.ReadOnly = true;
+            this.SNCode.Size = new System.Drawing.Size(204, 31);
+            this.SNCode.TabIndex = 7;
+            this.SNCode.Text = "";
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(24, 156);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(67, 13);
+            this.label11.TabIndex = 19;
+            this.label11.Text = "故障代码：";
+            // 
+            // state
+            // 
+            this.state.Location = new System.Drawing.Point(92, 156);
+            this.state.Name = "state";
+            this.state.ReadOnly = true;
+            this.state.Size = new System.Drawing.Size(130, 22);
+            this.state.TabIndex = 20;
+            this.state.Text = "";
             // 
             // Form1
             // 
@@ -462,6 +507,7 @@
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.datagroup.ResumeLayout(false);
+            this.datagroup.PerformLayout();
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
             this.groupBox2.ResumeLayout(false);
@@ -512,6 +558,10 @@
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.ComboBox comboBox1;
+        private System.Windows.Forms.RichTextBox SNCode;
+        private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.RichTextBox state;
+        private System.Windows.Forms.Label label11;
     }
 }
 

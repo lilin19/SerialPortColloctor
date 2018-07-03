@@ -188,13 +188,5 @@ namespace SignalCollectorPro
                     workBook.Close();
                 }
             }
-
-
-
-
-
-
-
-        
     }
 }

@@ -14,6 +14,47 @@ namespace SignalCollectorPro
     {
         public static SerialPort _mySerialPort = new SerialPort("COM5");
         public static string port;
+        public static byte[] _datarequest =
+        {
+             0xA6,
+             0x6A,
+             0x13,
+             0x00,
+             0x01,
+             0x01,
+             0x01,
+            //sn
+             0xAA,
+             0xAA,
+             0xAA,
+             0xAA,
+             0xAA,
+             0xAA,
+             0xAA,
+             0xAA,
+             0xAA,
+             0xAA,
+             0xAA,
+             0xAA,
+             0xAA,
+             0xAA,
+
+             0xFF,
+             0xFF
+        };
+        public static byte[] _collectrequest =
+            {
+            0xA6,
+            0x6A,
+            0x05,
+            0x00,
+            0x01,
+            0x01,
+            0x00,
+            0xFF,
+            0xFF,
+            };
+ 
 
         public static void SetReceiver(string setport)
         {
@@ -58,11 +99,40 @@ namespace SignalCollectorPro
             {
                 if (input[6] == 65)
                 {
-                    var tmperature = BitConverter.ToInt16(input, 21) / 100.0;
-                    var mes = BitConverter.ToInt32(input, 23) / 100.0;
-                    var state = BitConverter.ToUInt16(input, 27);
+                    var tmperature = BitConverter.ToInt16(input, 22) / 100.0;
+                    var mes = BitConverter.ToInt32(input, 24) / 100.0;
+                    var state = BitConverter.ToUInt16(input, 28);
                     Data data = new Data(tmperature, mes, state);
                     return data;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                return null;
+            }
+
+        }
+
+        static public SN GetSN(byte[] input)
+        {
+            if (input.Length != 0)
+            {
+                if (input[6] == 65)
+                {
+                    byte[] sn = new byte[14]; 
+                    for(int i = 0; i < 13; i++)
+                    {
+                        sn[i] = input[7+i];
+                    }
+
+                    ASCIIEncoding ascii = new System.Text.ASCIIEncoding();
+                    SN s = new SN(ascii.GetString(sn));
+                    
+                    return s;
                 }
                 else
                 {
@@ -79,50 +149,12 @@ namespace SignalCollectorPro
         static public void CollectCommand(SerialPort port)
         {
 
-            byte[] input = new byte[9];
-            input[0] = 0xA6;
-            input[1] = 0x6A;
-            input[2] = 0x05;
-            input[3] = 0x00;
-            input[4] = 0x01;
-            input[5] = 0x01;
-            input[6] = 0x00;
-            input[7] = 0xFF;
-            input[8] = 0xFF;
-
-            port.Write(input, 0, 9);
+            port.Write(_collectrequest, 0, 9);
         }
 
         static public void DataCommand(SerialPort port)
         {
-            byte[] input = new byte[23];
-            input[0] = 0xA6;
-            input[1] = 0x6A;
-            input[2] = 0x13;
-            input[3] = 0x00;
-            input[4] = 0x01;
-            input[5] = 0x01;
-            input[6] = 0x01;
-            //sn
-            input[7] = 0xAA;
-            input[8] = 0xAA;
-            input[9] = 0xAA;
-            input[10] = 0xAA;
-            input[11] = 0xAA;
-            input[12] = 0xAA;
-            input[13] = 0xAA;
-            input[14] = 0xAA;
-            input[15] = 0xAA;
-            input[16] = 0xAA;
-            input[17] = 0xAA;
-            input[18] = 0xAA;
-            input[19] = 0xAA;
-            input[20] = 0xAA;
-
-            input[21] = 0xFF;
-            input[22] = 0xFF;
-
-            port.Write(input, 0, 23);
+            port.Write(_datarequest, 0, 23);
         }
 
 
