@@ -228,22 +228,6 @@ namespace SignalCollectorPro
 
         }
 
-        public static void ConnectPort(string com)
-        {
-            try { 
-            Core.SetReceiver(com);
-            Core._mySerialPort.Open();
-            }
-            catch (Exception)
-            {
-                
-            }
-        }
-
-        public static SerialPort GetPort()
-        {
-            return Core._mySerialPort;
-        }
 
     }
 }

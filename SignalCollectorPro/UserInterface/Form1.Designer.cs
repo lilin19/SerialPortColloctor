@@ -31,6 +31,8 @@
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.datagroup = new System.Windows.Forms.GroupBox();
+            this.SNCode = new System.Windows.Forms.RichTextBox();
+            this.label10 = new System.Windows.Forms.Label();
             this.button3 = new System.Windows.Forms.Button();
             this.Save = new System.Windows.Forms.Button();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
@@ -45,8 +47,9 @@
             this.label4 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.state = new System.Windows.Forms.RichTextBox();
+            this.label11 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.label8 = new System.Windows.Forms.Label();
             this.button6 = new System.Windows.Forms.Button();
             this.start = new System.Windows.Forms.Button();
@@ -65,10 +68,6 @@
             this.button2 = new System.Windows.Forms.Button();
             this.clear = new System.Windows.Forms.Button();
             this.Screen = new System.Windows.Forms.ListView();
-            this.label10 = new System.Windows.Forms.Label();
-            this.SNCode = new System.Windows.Forms.RichTextBox();
-            this.label11 = new System.Windows.Forms.Label();
-            this.state = new System.Windows.Forms.RichTextBox();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.datagroup.SuspendLayout();
@@ -114,6 +113,25 @@
             this.datagroup.TabIndex = 7;
             this.datagroup.TabStop = false;
             this.datagroup.Text = "数据录入";
+            // 
+            // SNCode
+            // 
+            this.SNCode.Location = new System.Drawing.Point(92, 19);
+            this.SNCode.Multiline = false;
+            this.SNCode.Name = "SNCode";
+            this.SNCode.ReadOnly = true;
+            this.SNCode.Size = new System.Drawing.Size(204, 31);
+            this.SNCode.TabIndex = 7;
+            this.SNCode.Text = "";
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(54, 28);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(46, 13);
+            this.label10.TabIndex = 6;
+            this.label10.Text = "SN码：";
             // 
             // button3
             // 
@@ -245,7 +263,6 @@
             this.groupBox1.Controls.Add(this.state);
             this.groupBox1.Controls.Add(this.label11);
             this.groupBox1.Controls.Add(this.label9);
-            this.groupBox1.Controls.Add(this.comboBox1);
             this.groupBox1.Controls.Add(this.label8);
             this.groupBox1.Controls.Add(this.button6);
             this.groupBox1.Controls.Add(this.start);
@@ -264,6 +281,24 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "当前串口信息：";
             // 
+            // state
+            // 
+            this.state.Location = new System.Drawing.Point(92, 156);
+            this.state.Name = "state";
+            this.state.ReadOnly = true;
+            this.state.Size = new System.Drawing.Size(130, 22);
+            this.state.TabIndex = 20;
+            this.state.Text = "";
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(24, 156);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(67, 13);
+            this.label11.TabIndex = 19;
+            this.label11.Text = "故障代码：";
+            // 
             // label9
             // 
             this.label9.AutoSize = true;
@@ -272,14 +307,6 @@
             this.label9.Size = new System.Drawing.Size(67, 13);
             this.label9.TabIndex = 18;
             this.label9.Text = "工作模式：";
-            // 
-            // comboBox1
-            // 
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Location = new System.Drawing.Point(331, 63);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(121, 21);
-            this.comboBox1.TabIndex = 17;
             // 
             // label8
             // 
@@ -458,43 +485,6 @@
             this.Screen.TabIndex = 0;
             this.Screen.UseCompatibleStateImageBehavior = false;
             // 
-            // label10
-            // 
-            this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(54, 28);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(46, 13);
-            this.label10.TabIndex = 6;
-            this.label10.Text = "SN码：";
-            // 
-            // SNCode
-            // 
-            this.SNCode.Location = new System.Drawing.Point(92, 19);
-            this.SNCode.Multiline = false;
-            this.SNCode.Name = "SNCode";
-            this.SNCode.ReadOnly = true;
-            this.SNCode.Size = new System.Drawing.Size(204, 31);
-            this.SNCode.TabIndex = 7;
-            this.SNCode.Text = "";
-            // 
-            // label11
-            // 
-            this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(24, 156);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(67, 13);
-            this.label11.TabIndex = 19;
-            this.label11.Text = "故障代码：";
-            // 
-            // state
-            // 
-            this.state.Location = new System.Drawing.Point(92, 156);
-            this.state.Name = "state";
-            this.state.ReadOnly = true;
-            this.state.Size = new System.Drawing.Size(130, 22);
-            this.state.TabIndex = 20;
-            this.state.Text = "";
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -557,7 +547,6 @@
         private System.Windows.Forms.Button button6;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Label label9;
-        private System.Windows.Forms.ComboBox comboBox1;
         private System.Windows.Forms.RichTextBox SNCode;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.RichTextBox state;

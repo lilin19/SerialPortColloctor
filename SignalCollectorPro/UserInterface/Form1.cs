@@ -20,7 +20,7 @@ namespace SignalCollectorPro
         static List<double> _temperature = new List<double>();
         static List<string> _time = new List<string>();
         bool response;
-
+        static SerialPortService _sps = new SerialPortService(); 
         public Form1()
         {
             InitializeComponent();
@@ -59,17 +59,7 @@ namespace SignalCollectorPro
 
         private void dispatcherTimer_Tick(object sender, EventArgs e)
         {
-            Length.Text = BusinessLogics.GetCurrentSignalLength();
-            Time.Text = BusinessLogics.GetCurrentSignalTime();
-            Mea.Text = BusinessLogics.GetCurrentMeasurement();
-            Temp.Text = BusinessLogics.GetCurrentTemperature();
-            SignalContent.Text = BusinessLogics.GetCurrentSignal();
-            SNCode.Text = BusinessLogics.GetCurrentSN();
-            state.Text = BusinessLogics.GetCurrentState();
-            if (Core._mySerialPort.IsOpen == true)
-            {
-                label8.ForeColor = Color.LightGreen;
-            }
+
 
 
         }
@@ -98,7 +88,7 @@ namespace SignalCollectorPro
 
         private void start_Click(object sender, EventArgs e)
         {
-            if (Core._mySerialPort != null)
+            if (Core._mySerialPort != null && Core._mySerialPort.IsOpen == true)
             {
                 Core._mySerialPort.Close();
             }
@@ -107,13 +97,23 @@ namespace SignalCollectorPro
                 MessageBox.Show(String.Format("你选择了串口 '{0}'", Ports.SelectedItem));
                 try
                 {
-                    BusinessLogics.ConnectPort(Ports.SelectedItem.ToString());
+                    _sps.ConnectPort(Ports.SelectedItem.ToString());
+                    if (Core._mySerialPort.IsOpen == true)
+                    {
+                        label8.ForeColor = Color.LightGreen;
+                    }
+                    else
+                    {
+                        label8.ForeColor = Color.Red;
+                    }
                 }
                 catch (Exception)
                 {
 
                 }
-                SerialPortService.PeriodicListen();
+                _sps.Receive += new SerialPortService.SerialPortReceivedHandler(refresh);
+                _sps.PeriodicListen();
+                
             }
             else
             {
@@ -121,6 +121,20 @@ namespace SignalCollectorPro
             }
         }
 
+         void refresh(object sender, SerialPortReceiveArgs e)
+        {
+            Invoke(new MethodInvoker( () =>
+            {
+                Length.Text = BusinessLogics.GetCurrentSignalLength();
+                Time.Text = BusinessLogics.GetCurrentSignalTime();
+                Mea.Text = BusinessLogics.GetCurrentMeasurement();
+                Temp.Text = BusinessLogics.GetCurrentTemperature();
+                SignalContent.Text = BusinessLogics.GetCurrentSignal();
+                SNCode.Text = BusinessLogics.GetCurrentSN();
+                state.Text = BusinessLogics.GetCurrentState();
+            }));
+        }
+        
 
         private bool Validation(string t, string m)
         {
@@ -217,14 +231,12 @@ namespace SignalCollectorPro
             string port = Ports.SelectedItem.ToString();
             int portindex = Ports.SelectedIndex;
             senden(port, portindex);
-          
-
         }
 
         private void senden(string port, int portindex)
         {
             bool response = false;
-            if (Core._mySerialPort != null)
+            if (Core._mySerialPort != null && Core._mySerialPort.IsOpen == true)
             {
                 Core._mySerialPort.Close();
             }
@@ -233,30 +245,51 @@ namespace SignalCollectorPro
                 MessageBox.Show(String.Format("向串口 '{0}' 发送采集指令", port));
                 try
                 {
-                    BusinessLogics.ConnectPort(port);
-                    response = SerialPortService.RegularMode(100, 3000, 1000);
-
-                    MessageBox.Show(response.ToString());
-                    if (response)
-                    {
-                        label8.ForeColor = Color.Black;
-                    }
-                    else
-                    {
-                        MessageBox.Show("timeout");
-                    }
-
+                    label8.ForeColor = Color.Blue;
+                    
+                    var th = new Thread(()=> {
+                        _sps.ConnectPort(port);
+                        _sps.CollectCommand(100, 3000);
+                        _sps.Receive += new SerialPortService.SerialPortReceivedHandler(ReceiveRequest);
+                        response = _sps.DataRequest(1000);
+                        
+                        
+                        if (response == false)
+                        {
+                            label8.ForeColor = Color.Red;
+                            MessageBox.Show("timeout");
+                        }
+                    });
+                    th.Start();
                 }
                 catch (Exception)
                 {
 
                 }
-                SerialPortService.PeriodicListen();
             }
             else
             {
                 MessageBox.Show("Please select a port first");
             }
+        }
+
+        private void ReceiveRequest(object sender, SerialPortReceiveArgs e)
+        {
+            Invoke(new MethodInvoker(() =>
+            {
+                MessageBox.Show(e.response.ToString());
+                if (e.response)
+                {
+                    label8.ForeColor = Color.Black;
+                }
+                Length.Text = BusinessLogics.GetCurrentSignalLength();
+                Time.Text = BusinessLogics.GetCurrentSignalTime();
+                Mea.Text = BusinessLogics.GetCurrentMeasurement();
+                Temp.Text = BusinessLogics.GetCurrentTemperature();
+                SignalContent.Text = BusinessLogics.GetCurrentSignal();
+                SNCode.Text = BusinessLogics.GetCurrentSN();
+                state.Text = BusinessLogics.GetCurrentState();
+            }));
         }
     }
 

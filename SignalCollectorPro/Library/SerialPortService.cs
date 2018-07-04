@@ -11,45 +11,48 @@ namespace SignalCollectorPro
 {
     class SerialPortService
     {
-        
-
+        public delegate void SerialPortReceivedHandler(object sender, SerialPortReceiveArgs e);
+        public event SerialPortReceivedHandler Receive;
         private static ManualResetEvent _collectDone = new ManualResetEvent(false);
         public static List<double> _temperature = new List<double>();
         public static List<string> _time = new List<string>();
-        public static bool RegularMode(int gap, int wait,int timeout)
+        public void CollectCommand(int gap, int wait)
         {
-            bool index;
-            Core.CollectCommand(BusinessLogics.GetPort());
+            //
+            Core.CollectCommand(GetPort());
             Thread.Sleep(gap);
-            Core.CollectCommand(BusinessLogics.GetPort());
+            Core.CollectCommand(GetPort());
             Thread.Sleep(gap);
-            Core.CollectCommand(BusinessLogics.GetPort());
+            Core.CollectCommand(GetPort());
             Thread.Sleep(wait-2*gap);
-            Core.DataCommand(BusinessLogics.GetPort());
+        }
+
+        public bool DataRequest(int timeout)
+        {
             
+            bool index;
+            Core.DataCommand(GetPort());
             RegularListen();
             index = _collectDone.WaitOne(timeout);
             Core._mySerialPort.Close();
-            
             return index;
         }
 
-        public static void PeriodicListen()
+        public void PeriodicListen()
         {
 
         Core.StartListen(Core._mySerialPort, new SerialDataReceivedEventHandler(PeriodicDataReceivedHandler));
         }
 
-        public static void RegularListen()
+        public void RegularListen()
         {
             Core.StartListen(Core._mySerialPort, new SerialDataReceivedEventHandler(RegularDataReceivedHandler));
         }
 
-        private static void RegularDataReceivedHandler(
+        private void RegularDataReceivedHandler(
   object receiver,
   SerialDataReceivedEventArgs e)
         {
-            
             Thread.Sleep(50);
             SerialPort sp = (SerialPort)receiver;
             byte[] tst = new byte[sp.BytesToRead];
@@ -76,23 +79,22 @@ namespace SignalCollectorPro
 
             if (tst.Length != 0)
             {
+             
                 Data d = BusinessLogics.GetData(tst);
                 BusinessLogics.SetCurrentData(d);
                 if (d != null)
                 {
                     _temperature.Add(double.Parse(BusinessLogics.GetCurrentTemperature()));
                     _time.Add(BusinessLogics.GetCurrentSignalTime());
-                    
-
+                    _collectDone.Set();
+                    SerialPortReceiveArgs ev = new SerialPortReceiveArgs(tst,true);
+                    Received(ev);
                 }
-                _collectDone.Set();
             }
-            
-            
             
         }
 
-        private static void PeriodicDataReceivedHandler(
+        private void PeriodicDataReceivedHandler(
    object receiver,
    SerialDataReceivedEventArgs e)
         {
@@ -131,10 +133,57 @@ namespace SignalCollectorPro
                     BusinessLogics.SetCurrentData(d);
                     BusinessLogics.SetCurrentSN(s);
                 }
+                else
+                {
+                    BusinessLogics.SetCurrentData(null);
+                    BusinessLogics.SetCurrentSN(null);
+                }
+                SerialPortReceiveArgs ev = new SerialPortReceiveArgs(tst,true);
+                Received(ev);
             }
 
-            _collectDone.Set();
+    
         }
 
+        public void ConnectPort(string com)
+        {
+            try
+            {
+                Core.SetReceiver(com);
+                Core._mySerialPort.Open();
+            }
+            catch (Exception)
+            {
+
+            }
+        }
+
+        public SerialPort GetPort()
+        {
+            return Core._mySerialPort;
+        }
+
+        public void Received(SerialPortReceiveArgs e)
+        {
+            Receive?.Invoke(this, e);
+        }
+    }
+
+    public class SerialPortReceiveArgs : EventArgs
+    {
+
+        private byte[] tst;
+        public bool response;
+        //Constructor.
+        //
+        public SerialPortReceiveArgs(byte[] tst, bool response)
+        {
+            this.tst = tst;
+            this.response = response;
+        }
+        public byte[] Content
+        {
+            get { return tst; }
+        }
     }
 }
