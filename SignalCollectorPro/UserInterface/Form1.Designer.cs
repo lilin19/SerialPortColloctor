@@ -49,7 +49,6 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.state = new System.Windows.Forms.RichTextBox();
             this.label11 = new System.Windows.Forms.Label();
-            this.label9 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
             this.button6 = new System.Windows.Forms.Button();
             this.start = new System.Windows.Forms.Button();
@@ -68,6 +67,8 @@
             this.button2 = new System.Windows.Forms.Button();
             this.clear = new System.Windows.Forms.Button();
             this.Screen = new System.Windows.Forms.ListView();
+            this.button7 = new System.Windows.Forms.Button();
+            this.label9 = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.datagroup.SuspendLayout();
@@ -260,9 +261,10 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.label9);
+            this.groupBox1.Controls.Add(this.button7);
             this.groupBox1.Controls.Add(this.state);
             this.groupBox1.Controls.Add(this.label11);
-            this.groupBox1.Controls.Add(this.label9);
             this.groupBox1.Controls.Add(this.label8);
             this.groupBox1.Controls.Add(this.button6);
             this.groupBox1.Controls.Add(this.start);
@@ -299,15 +301,6 @@
             this.label11.TabIndex = 19;
             this.label11.Text = "故障代码：";
             // 
-            // label9
-            // 
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(270, 67);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(67, 13);
-            this.label9.TabIndex = 18;
-            this.label9.Text = "工作模式：";
-            // 
             // label8
             // 
             this.label8.AutoSize = true;
@@ -324,7 +317,7 @@
             this.button6.Name = "button6";
             this.button6.Size = new System.Drawing.Size(75, 23);
             this.button6.TabIndex = 15;
-            this.button6.Text = "采集指令";
+            this.button6.Text = "长供电模式";
             this.button6.UseVisualStyleBackColor = true;
             this.button6.Click += new System.EventHandler(this.button6_Click);
             // 
@@ -334,7 +327,7 @@
             this.start.Name = "start";
             this.start.Size = new System.Drawing.Size(75, 23);
             this.start.TabIndex = 14;
-            this.start.Text = "开始工作";
+            this.start.Text = "令牌模式";
             this.start.UseVisualStyleBackColor = true;
             this.start.Click += new System.EventHandler(this.start_Click);
             // 
@@ -485,6 +478,25 @@
             this.Screen.TabIndex = 0;
             this.Screen.UseCompatibleStateImageBehavior = false;
             // 
+            // button7
+            // 
+            this.button7.Location = new System.Drawing.Point(458, 64);
+            this.button7.Name = "button7";
+            this.button7.Size = new System.Drawing.Size(75, 23);
+            this.button7.TabIndex = 21;
+            this.button7.Text = "关闭";
+            this.button7.UseVisualStyleBackColor = true;
+            this.button7.Click += new System.EventHandler(this.button7_Click);
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(673, 40);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(47, 13);
+            this.label9.TabIndex = 22;
+            this.label9.Text = "TimeOut";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -546,11 +558,12 @@
         private System.Windows.Forms.Button button5;
         private System.Windows.Forms.Button button6;
         private System.Windows.Forms.Label label8;
-        private System.Windows.Forms.Label label9;
         private System.Windows.Forms.RichTextBox SNCode;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.RichTextBox state;
         private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.Button button7;
+        private System.Windows.Forms.Label label9;
     }
 }
 

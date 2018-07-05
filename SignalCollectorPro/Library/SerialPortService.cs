@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SignalCollectorPro;
+using System;
 using System.Collections.Generic;
 using System.IO.Ports;
 using System.Linq;
@@ -9,47 +10,74 @@ using static SignalCollectorPro.DataObjects;
 
 namespace SignalCollectorPro
 {
-    class SerialPortService
+    public delegate void SerialPortReceivedHandler(object sender, SerialPortReceiveArgs e);
+    interface SerialPortService
     {
-        public delegate void SerialPortReceivedHandler(object sender, SerialPortReceiveArgs e);
-        public event SerialPortReceivedHandler Receive;
+        event SerialPortReceivedHandler Receive;
+
+        void ReleasePort();
+        void Listen();
+        bool SerialPortisOpen();
+        void ConnectPort(string com);
+        SerialPort GetPort();
+        void Received(SerialPortReceiveArgs e);
+        void CollectCommand(int gap, int wait);
+        bool DataRequest(int timeout);
+
+
+    }
+    public class RegularModeService : SerialPortService
+    {
         private static ManualResetEvent _collectDone = new ManualResetEvent(false);
         public static List<double> _temperature = new List<double>();
         public static List<string> _time = new List<string>();
+
+        public event SerialPortReceivedHandler Receive;
+
+        public RegularModeService(string com)
+        {
+            Core._mySerialPort.Dispose();
+            ConnectPort(com);
+        }
         public void CollectCommand(int gap, int wait)
         {
             //
             Core.CollectCommand(GetPort());
-            Thread.Sleep(gap);
-            Core.CollectCommand(GetPort());
-            Thread.Sleep(gap);
-            Core.CollectCommand(GetPort());
-            Thread.Sleep(wait-2*gap);
+            //Thread.Sleep(gap);
+            //Core.CollectCommand(GetPort());
+            //Thread.Sleep(gap);
+            //Core.CollectCommand(GetPort());
+            Thread.Sleep(wait - 2 * gap);
         }
 
+
+        public void ReleasePort()
+        {
+            Core._mySerialPort.Dispose();
+        }
+        public bool SerialPortisOpen()
+        {
+            return Core._mySerialPort.IsOpen;
+        }
         public bool DataRequest(int timeout)
         {
-            
+            _collectDone = new ManualResetEvent(false);
             bool index;
             Core.DataCommand(GetPort());
-            RegularListen();
+            Listen();
             index = _collectDone.WaitOne(timeout);
-            Core._mySerialPort.Close();
+            //Core._mySerialPort.Close(); 
             return index;
         }
 
-        public void PeriodicListen()
+
+        public void Listen()
         {
 
-        Core.StartListen(Core._mySerialPort, new SerialDataReceivedEventHandler(PeriodicDataReceivedHandler));
+            Core.StartListen(Core._mySerialPort, new SerialDataReceivedEventHandler(DataReceivedHandler));
         }
 
-        public void RegularListen()
-        {
-            Core.StartListen(Core._mySerialPort, new SerialDataReceivedEventHandler(RegularDataReceivedHandler));
-        }
-
-        private void RegularDataReceivedHandler(
+        private void DataReceivedHandler(
   object receiver,
   SerialDataReceivedEventArgs e)
         {
@@ -74,29 +102,115 @@ namespace SignalCollectorPro
             }
             if (hexValue != "")
             {
-                BusinessLogics.WriteLog(hexValue);
+                BusinessLogics.FileWrite("Log.txt", hexValue);
             }
 
             if (tst.Length != 0)
             {
-             
+
                 Data d = BusinessLogics.GetData(tst);
-                BusinessLogics.SetCurrentData(d);
+
+                SN s = BusinessLogics.GetSN(tst);
                 if (d != null)
                 {
+                    BusinessLogics.SetCurrentSN(s);
+                    BusinessLogics.SetCurrentData(d);
                     _temperature.Add(double.Parse(BusinessLogics.GetCurrentTemperature()));
                     _time.Add(BusinessLogics.GetCurrentSignalTime());
                     _collectDone.Set();
-                    SerialPortReceiveArgs ev = new SerialPortReceiveArgs(tst,true);
+                    SerialPortReceiveArgs ev = new SerialPortReceiveArgs(tst, true);
                     Received(ev);
                 }
             }
-            
+
         }
 
-        private void PeriodicDataReceivedHandler(
-   object receiver,
-   SerialDataReceivedEventArgs e)
+
+
+
+
+
+        public void ConnectPort(string com)
+        {
+            Core.SetReceiver(com);
+
+            //try
+            //{
+            //    Core.SetReceiver(com);
+            //    Core._mySerialPort.Open();
+            //}
+            //catch (Exception)
+            //{
+
+            //}
+        }
+
+        public SerialPort GetPort()
+        {
+            return Core._mySerialPort;
+        }
+
+        public void Received(SerialPortReceiveArgs e)
+        {
+            Receive?.Invoke(this, e);
+        }
+
+
+    }
+
+    public class PeriodicModeService : SerialPortService
+    {    
+        private static ManualResetEvent _collectDone = new ManualResetEvent(false);
+        public static List<double> _temperature = new List<double>();
+        public static List<string> _time = new List<string>();
+
+        public event SerialPortReceivedHandler Receive;
+
+        public PeriodicModeService(string com)
+        {
+            Core._mySerialPort.Dispose();
+            ConnectPort(com);
+        }
+        public void ConnectPort(string com)
+        {
+            Core.SetReceiver(com);
+        }
+
+        public SerialPort GetPort()
+        {
+            return Core._mySerialPort;
+        }
+        public bool DataRequest(int timeout)
+        {
+            Core.DataCommand(GetPort());
+            Listen();
+            //Core._mySerialPort.Close(); 
+            return true;
+        }
+        public void Listen()
+        {
+
+            Core.StartListen(Core._mySerialPort, new SerialDataReceivedEventHandler(DataReceivedHandler));
+        }
+
+        public void Received(SerialPortReceiveArgs e)
+        {
+            Receive?.Invoke(this, e);
+        }
+
+        public void ReleasePort()
+        {
+            Core._mySerialPort.Dispose();
+        }
+
+        public bool SerialPortisOpen()
+        {
+            return Core._mySerialPort.IsOpen;
+        }
+
+        private void DataReceivedHandler(
+object receiver,
+SerialDataReceivedEventArgs e)
         {
             Thread.Sleep(50);
             SerialPort sp = (SerialPort)receiver;
@@ -119,7 +233,7 @@ namespace SignalCollectorPro
             }
             if (hexValue != "")
             {
-                BusinessLogics.WriteLog(hexValue);
+                BusinessLogics.FileWrite("Log.txt", hexValue);
             }
 
             if (tst.Length != 0)
@@ -138,37 +252,16 @@ namespace SignalCollectorPro
                     BusinessLogics.SetCurrentData(null);
                     BusinessLogics.SetCurrentSN(null);
                 }
-                SerialPortReceiveArgs ev = new SerialPortReceiveArgs(tst,true);
+                SerialPortReceiveArgs ev = new SerialPortReceiveArgs(tst, true);
                 Received(ev);
             }
-
-    
         }
 
-        public void ConnectPort(string com)
+        public void CollectCommand(int gap, int wait)
         {
-            try
-            {
-                Core.SetReceiver(com);
-                Core._mySerialPort.Open();
-            }
-            catch (Exception)
-            {
-
-            }
-        }
-
-        public SerialPort GetPort()
-        {
-            return Core._mySerialPort;
-        }
-
-        public void Received(SerialPortReceiveArgs e)
-        {
-            Receive?.Invoke(this, e);
+            throw new NotImplementedException();
         }
     }
-
     public class SerialPortReceiveArgs : EventArgs
     {
 

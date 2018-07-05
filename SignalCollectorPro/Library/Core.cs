@@ -14,6 +14,8 @@ namespace SignalCollectorPro
     {
         public static SerialPort _mySerialPort = new SerialPort("COM5");
         public static string port;
+        public static string sn = "UC001807020001";
+        
         public static byte[] _datarequest =
         {
              0xA6,
@@ -54,7 +56,8 @@ namespace SignalCollectorPro
             0xFF,
             0xFF,
             };
- 
+
+       
 
         public static void SetReceiver(string setport)
         {
@@ -66,8 +69,8 @@ namespace SignalCollectorPro
             _mySerialPort.DataBits = 8;
             _mySerialPort.Handshake = Handshake.None;
             _mySerialPort.ReceivedBytesThreshold = 5;
-           // _mySerialPort.Handshake = Handshake.RequestToSend;
-
+            // _mySerialPort.Handshake = Handshake.RequestToSend;
+            _mySerialPort.Open();
         }
 
         public static void StartListen(SerialPort port, SerialDataReceivedEventHandler handler)
@@ -76,85 +79,52 @@ namespace SignalCollectorPro
 
         }
 
-        static public void FileWrite(string path, string hex)
-        {
 
-            FileStream myStream = new FileStream(@"Log.txt", FileMode.Append, FileAccess.Write);
-            StreamWriter sWriter = new StreamWriter(myStream);
-            sWriter.WriteLine(DateTime.Now + " Receive: " + hex);
-
-            sWriter.Close();
-            myStream.Close();
-
-        }
 
         static public int DataLength(byte[] input)
         {
             return 0;
         }
 
-        static public Data GetData(byte[] input)
-        {
-            if (input.Length != 0)
-            {
-                if (input[6] == 65)
-                {
-                    var tmperature = BitConverter.ToInt16(input, 22) / 100.0;
-                    var mes = BitConverter.ToInt32(input, 24) / 100.0;
-                    var state = BitConverter.ToUInt16(input, 28);
-                    Data data = new Data(tmperature, mes, state);
-                    return data;
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            else
-            {
-                return null;
-            }
-
-        }
-
-        static public SN GetSN(byte[] input)
-        {
-            if (input.Length != 0)
-            {
-                if (input[6] == 65)
-                {
-                    byte[] sn = new byte[14]; 
-                    for(int i = 0; i < 13; i++)
-                    {
-                        sn[i] = input[7+i];
-                    }
-
-                    ASCIIEncoding ascii = new System.Text.ASCIIEncoding();
-                    SN s = new SN(ascii.GetString(sn));
-                    
-                    return s;
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            else
-            {
-                return null;
-            }
-
-        }
 
         static public void CollectCommand(SerialPort port)
         {
-
+            ModRTU_CRC(ref _collectrequest, 7);
             port.Write(_collectrequest, 0, 9);
         }
 
         static public void DataCommand(SerialPort port)
         {
+            byte[] d = Encoding.ASCII.GetBytes(sn);
+            Array.Copy(d, 0, _datarequest, 7, 14);
+            ModRTU_CRC(ref _datarequest, 21);
             port.Write(_datarequest, 0, 23);
+        }
+
+
+        static public void ModRTU_CRC(ref byte[] buf ,int len)
+        {
+            UInt16 crc = 0xFFFF;
+
+            for (int pos = 0; pos < len; pos++)
+            {
+                crc ^= (UInt16)buf[pos]; // XOR byte into least sig. byte of crc
+
+                for (int i = 8; i != 0; i--)
+                { // Loop over each bit
+                    if ((crc & 0x0001) != 0)
+                    { // If the LSB is set
+                        crc >>= 1; // Shift right and XOR 0xA001
+                        crc ^= 0xA001;
+                    }
+                    else // Else LSB is not set
+                        crc >>= 1; // Just shift right
+                }
+            }
+            byte[] o = BitConverter.GetBytes(crc);
+            // Note, this number has low and high bytes swapped, so use it accordingly (or swap bytes)
+            buf[len] = o[1];
+            buf[len + 1] = o[0];
         }
 
 
