@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.IO;
 using System.IO.Ports;
 using System.Linq;
 using System.Text;
@@ -133,67 +132,19 @@ namespace SignalCollectorPro
             DataBaseManager.GetXLS(BusinessLogics.DumpDataSet(DataBaseManager.LoadFromFile("Measure.xls")));
         }
 
-        static public SN GetSN(byte[] input)
+        public static Data GetData(byte[] tst)
         {
-            if (input.Length != 0)
-            {
-                if (input[6] == 65)
-                {
-                    byte[] sn = new byte[14];
-                    for (int i = 0; i < 13; i++)
-                    {
-                        sn[i] = input[7 + i];
-                    }
-
-                    ASCIIEncoding ascii = new System.Text.ASCIIEncoding();
-                    SN s = new SN(ascii.GetString(sn));
-
-                    return s;
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            else
-            {
-                return null;
-            }
-
+            return Core.GetData(tst);
         }
-        static public Data GetData(byte[] input)
-        {
-            if (input.Length != 0)
-            {
-                if (input[6] == 65)
-                {
-                    var tmperature = BitConverter.ToInt16(input, 22) / 100.0;
-                    var mes = BitConverter.ToInt32(input, 24) / 100.0;
-                    var state = BitConverter.ToUInt16(input, 28);
-                    Data data = new Data(tmperature, mes, state);
-                    return data;
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            else
-            {
-                return null;
-            }
 
+        public static SN GetSN(byte[] tst)
+        {
+            return Core.GetSN(tst);
         }
-        static public void FileWrite(string path, string hex)
+
+        public static void WriteLog(string hex)
         {
-
-            FileStream myStream = new FileStream(@"Log.txt", FileMode.Append, FileAccess.Write);
-            StreamWriter sWriter = new StreamWriter(myStream);
-            sWriter.WriteLine(DateTime.Now + " Receive: " + hex);
-
-            sWriter.Close();
-            myStream.Close();
-
+            Core.FileWrite("test.txt", hex);
         }
 
         public static List<string> GetChartXList()
