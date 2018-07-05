@@ -16,11 +16,12 @@ namespace SignalCollectorPro
 {
     public partial class Form1 : Form
     {
+        static Thread th;
         static System.Windows.Forms.Timer _mt = new System.Windows.Forms.Timer();
         static List<double> _temperature = new List<double>();
         static List<string> _time = new List<string>();
-        bool response;
-        static SerialPortService _sps = new SerialPortService(); 
+        static bool power;
+        static SerialPortService _sps;
         public Form1()
         {
             InitializeComponent();
@@ -54,6 +55,8 @@ namespace SignalCollectorPro
             Screen.Columns.Add("实际温度", 200, HorizontalAlignment.Center);
             GetList();
             label8.ForeColor = Color.Red;
+            label9.ForeColor = Color.White;
+            button7.Enabled = false;
         }
 
 
@@ -88,16 +91,27 @@ namespace SignalCollectorPro
 
         private void start_Click(object sender, EventArgs e)
         {
+            button7.Enabled = true;
+            button6.Enabled = true;
+            label8.ForeColor = Color.Red;
+            label9.ForeColor = Color.White;
+            power = false;
+            if (th.IsAlive)
+            {
+                th.Abort();
+                th = null;
+            }
             if (Core._mySerialPort != null && Core._mySerialPort.IsOpen == true)
             {
-                Core._mySerialPort.Close();
+                _sps.PortRelease();
             }
+            
             if (Ports.SelectedIndex > -1)
             {
                 MessageBox.Show(String.Format("你选择了串口 '{0}'", Ports.SelectedItem));
                 try
                 {
-                    _sps.ConnectPort(Ports.SelectedItem.ToString());
+                    _sps = new SerialPortService(Ports.SelectedItem.ToString());
                     if (Core._mySerialPort.IsOpen == true)
                     {
                         label8.ForeColor = Color.LightGreen;
@@ -125,6 +139,7 @@ namespace SignalCollectorPro
         {
             Invoke(new MethodInvoker( () =>
             {
+                
                 Length.Text = BusinessLogics.GetCurrentSignalLength();
                 Time.Text = BusinessLogics.GetCurrentSignalTime();
                 Mea.Text = BusinessLogics.GetCurrentMeasurement();
@@ -228,6 +243,7 @@ namespace SignalCollectorPro
 
         private void button6_Click(object sender, EventArgs e)
         {
+            button7.Enabled = true;
             string port = Ports.SelectedItem.ToString();
             int portindex = Ports.SelectedIndex;
             senden(port, portindex);
@@ -235,29 +251,44 @@ namespace SignalCollectorPro
 
         private void senden(string port, int portindex)
         {
+            
             bool response = false;
-            if (Core._mySerialPort != null && Core._mySerialPort.IsOpen == true)
-            {
-                Core._mySerialPort.Close();
-            }
+            
+
             if (portindex > -1)
             {
+                button6.Enabled=false ;
                 MessageBox.Show(String.Format("向串口 '{0}' 发送采集指令", port));
                 try
                 {
                     label8.ForeColor = Color.Blue;
                     
-                    var th = new Thread(()=> {
-                        _sps.ConnectPort(port);
+                    th = new Thread(()=> {
+
+                            _sps = new SerialPortService(port);
+                        label9.ForeColor = Color.White;
+                        power = true;
+                        response = false;
                         _sps.CollectCommand(100, 3000);
-                        _sps.Receive += new SerialPortService.SerialPortReceivedHandler(ReceiveRequest);
-                        response = _sps.DataRequest(1000);
                         
                         
+                        while (power)
+                        {
+                            
+                            Thread.Sleep(3000);
+                            _sps = new SerialPortService(port);
+                            _sps.Receive += new SerialPortService.SerialPortReceivedHandler(ReceiveRequest);
+                            response = _sps.DataRequest(1000);
+                            _sps.PortRelease();
                         if (response == false)
                         {
-                            label8.ForeColor = Color.Red;
-                            MessageBox.Show("timeout");
+
+                                label8.ForeColor = Color.Red;
+                                label9.ForeColor = Color.Red;
+                                //MessageBox.Show("timeout");
+                            
+                        }
+                            
                         }
                     });
                     th.Start();
@@ -277,7 +308,8 @@ namespace SignalCollectorPro
         {
             Invoke(new MethodInvoker(() =>
             {
-                MessageBox.Show(e.response.ToString());
+                label9.ForeColor = Color.White;
+                //MessageBox.Show(e.response.ToString());
                 if (e.response)
                 {
                     label8.ForeColor = Color.Black;
@@ -290,6 +322,19 @@ namespace SignalCollectorPro
                 SNCode.Text = BusinessLogics.GetCurrentSN();
                 state.Text = BusinessLogics.GetCurrentState();
             }));
+        }
+
+        private void button7_Click(object sender, EventArgs e)
+        {
+            button7.Enabled = false;
+            button6.Enabled = true;
+            label8.ForeColor = Color.Red;
+            label9.ForeColor = Color.White;
+            power = false;
+
+                th.Abort();
+                th = null;
+            _sps.PortRelease();
         }
     }
 
