@@ -22,15 +22,6 @@ namespace SignalCollectorPro
             { return "无数据"; }
         }
 
-        public static bool GetCurrentTimeout()
-        {
-            if (DataCentre.CurrentSignal != null)
-            {
-                return DataCentre.Timeout;
-            }
-            else
-            { return false; }
-        }
 
         public static string GetCurrentState()
         {

@@ -257,17 +257,21 @@ namespace SignalCollectorPro
                 //MessageBox.Show(String.Format("向串口 '{0}' 发送采集指令", port));
                 try
                 {
-                    label8.ForeColor = Color.Blue;
-                    
+                    label8.ForeColor = Color.Blue;   
                     th = new Thread(() =>
                     {
+                        try {
                         _sps = new RegularModeDriver(port);
                         _sps.Receive += ReceiveRequest;
                         _sps.StartService();
+                        }
+                        catch(Exception)
+                        {
+
+                        }
                     });
                     th.Start();
-
-
+                 
                 }
                 catch (Exception)
                 {
@@ -277,6 +281,7 @@ namespace SignalCollectorPro
             {
                 MessageBox.Show("Please select a port first");
             }
+         
         }
 
         public void ReceiveRequest(object sender, SerialPortReceiveArgs e)
