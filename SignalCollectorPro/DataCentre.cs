@@ -14,6 +14,5 @@ namespace SignalCollectorPro
         public static int CurrentSignalLength;
         public static DateTime CurrentSignalTime;
         public static SN CurrentSN;
-        public static bool Timeout;
     }
 }
