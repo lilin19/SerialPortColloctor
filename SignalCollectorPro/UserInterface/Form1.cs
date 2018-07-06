@@ -20,7 +20,7 @@ namespace SignalCollectorPro
         static System.Windows.Forms.Timer _mt = new System.Windows.Forms.Timer();
         static List<double> _temperature = new List<double>();
         static List<string> _time = new List<string>();
-        static bool power;
+        
         static SerialPortService _sps;
         public Form1()
         {
@@ -59,12 +59,8 @@ namespace SignalCollectorPro
             button7.Enabled = false;
         }
 
-
         private void dispatcherTimer_Tick(object sender, EventArgs e)
         {
-
-
-
         }
 
         private void GetList()
@@ -95,7 +91,6 @@ namespace SignalCollectorPro
             button6.Enabled = true;
             label8.ForeColor = Color.Red;
             label9.ForeColor = Color.White;
-            power = false;
             if (th != null)
             {
                 if (th.IsAlive)
@@ -106,7 +101,7 @@ namespace SignalCollectorPro
             }
             if (_sps != null)
             {
-                _sps.ReleasePort();
+                _sps.StopService();
             }
 
             if (Ports.SelectedIndex > -1)
@@ -114,8 +109,10 @@ namespace SignalCollectorPro
                 MessageBox.Show(String.Format("你选择了串口 '{0}'", Ports.SelectedItem));
                 try
                 {
-                    _sps = new PeriodicModeService(Ports.SelectedItem.ToString());
-                    if (_sps.SerialPortisOpen() == true)
+                    _sps = new PeriodicModeDriver(Ports.SelectedItem.ToString());
+                    _sps.Receive += refresh;
+                    _sps.StartService();
+                    if (_sps.IsOnService == true)
                     {
                         label8.ForeColor = Color.LightGreen;
                     }
@@ -128,8 +125,7 @@ namespace SignalCollectorPro
                 {
 
                 }
-                _sps.Receive += new SerialPortReceivedHandler(refresh);
-                _sps.Listen();
+
 
             }
             else
@@ -247,6 +243,7 @@ namespace SignalCollectorPro
         private void button6_Click(object sender, EventArgs e)
         {
             button7.Enabled = true;
+            label9.ForeColor = Color.White;
             string port = Ports.SelectedItem.ToString();
             int portindex = Ports.SelectedIndex;
             senden(port, portindex);
@@ -254,52 +251,26 @@ namespace SignalCollectorPro
 
         private void senden(string port, int portindex)
         {
-
-            bool response = false;
-
-
             if (portindex > -1)
             {
                 button6.Enabled = false;
-                MessageBox.Show(String.Format("向串口 '{0}' 发送采集指令", port));
+                //MessageBox.Show(String.Format("向串口 '{0}' 发送采集指令", port));
                 try
                 {
                     label8.ForeColor = Color.Blue;
-
+                    
                     th = new Thread(() =>
                     {
-
-                        _sps = new RegularModeService(port);
-                        label9.ForeColor = Color.White;
-                        power = true;
-                        response = false;
-                        _sps.CollectCommand(100, 3000);
-
-
-                        while (power)
-                        {
-
-                            Thread.Sleep(3000);
-                            _sps = new RegularModeService(port);
-                            _sps.Receive += new SerialPortReceivedHandler(ReceiveRequest);
-                            response = _sps.DataRequest(1000);
-                            _sps.ReleasePort();
-                            if (response == false)
-                            {
-
-                                label8.ForeColor = Color.Red;
-                                label9.ForeColor = Color.Red;
-                                //MessageBox.Show("timeout");
-
-                            }
-
-                        }
+                        _sps = new RegularModeDriver(port);
+                        _sps.Receive += ReceiveRequest;
+                        _sps.StartService();
                     });
                     th.Start();
+
+
                 }
                 catch (Exception)
                 {
-
                 }
             }
             else
@@ -308,7 +279,7 @@ namespace SignalCollectorPro
             }
         }
 
-        private void ReceiveRequest(object sender, SerialPortReceiveArgs e)
+        public void ReceiveRequest(object sender, SerialPortReceiveArgs e)
         {
             Invoke(new MethodInvoker(() =>
             {
@@ -317,14 +288,20 @@ namespace SignalCollectorPro
                 if (e.response)
                 {
                     label8.ForeColor = Color.Black;
+                    Length.Text = BusinessLogics.GetCurrentSignalLength();
+                    Time.Text = BusinessLogics.GetCurrentSignalTime();
+                    Mea.Text = BusinessLogics.GetCurrentMeasurement();
+                    Temp.Text = BusinessLogics.GetCurrentTemperature();
+                    SignalContent.Text = BusinessLogics.GetCurrentSignal();
+                    SNCode.Text = BusinessLogics.GetCurrentSN();
+                    state.Text = BusinessLogics.GetCurrentState();
                 }
-                Length.Text = BusinessLogics.GetCurrentSignalLength();
-                Time.Text = BusinessLogics.GetCurrentSignalTime();
-                Mea.Text = BusinessLogics.GetCurrentMeasurement();
-                Temp.Text = BusinessLogics.GetCurrentTemperature();
-                SignalContent.Text = BusinessLogics.GetCurrentSignal();
-                SNCode.Text = BusinessLogics.GetCurrentSN();
-                state.Text = BusinessLogics.GetCurrentState();
+                else
+                {
+                    label8.ForeColor = Color.Red;
+                    label9.ForeColor = Color.Red;
+                    _sps.StopService();
+                }
             }));
         }
 
@@ -334,13 +311,13 @@ namespace SignalCollectorPro
             button6.Enabled = true;
             label8.ForeColor = Color.Red;
             label9.ForeColor = Color.White;
-            power = false;
             if (th != null)
             {
                 th.Abort();
                 th = null;
             }
-            _sps.ReleasePort();
+            _sps.StopService();
+            _sps = null;
         }
     }
 

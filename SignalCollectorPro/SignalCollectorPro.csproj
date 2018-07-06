@@ -64,7 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BusinessLogics.cs" />
-    <Compile Include="Library\SerialPortService.cs" />
+    <Compile Include="Library\SerialPortDriver.cs" />
     <Compile Include="UserInterface\Chart.cs">
       <SubType>Form</SubType>
     </Compile>
