@@ -15,7 +15,7 @@ namespace SignalCollectorPro
         public static SerialPort _mySerialPort = new SerialPort("COM5");
         public static string port;
         public static string sn = "UC001807020001";
-        
+
         public static byte[] _datarequest =
         {
              0xA6,
@@ -57,7 +57,7 @@ namespace SignalCollectorPro
             0xFF,
             };
 
-       
+
 
         public static void SetReceiver(string setport)
         {
@@ -102,7 +102,7 @@ namespace SignalCollectorPro
         }
 
 
-        static public void ModRTU_CRC(ref byte[] buf ,int len)
+        static public void ModRTU_CRC(ref byte[] buf, int len)
         {
             UInt16 crc = 0xFFFF;
 

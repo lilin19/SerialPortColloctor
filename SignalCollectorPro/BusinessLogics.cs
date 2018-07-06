@@ -133,68 +133,6 @@ namespace SignalCollectorPro
             DataBaseManager.GetXLS(BusinessLogics.DumpDataSet(DataBaseManager.LoadFromFile("Measure.xls")));
         }
 
-        static public SN GetSN(byte[] input)
-        {
-            if (input.Length != 0)
-            {
-                if (input[6] == 65)
-                {
-                    byte[] sn = new byte[14];
-                    for (int i = 0; i < 14; i++)
-                    {
-                        sn[i] = input[7 + i];
-                    }
-
-                    ASCIIEncoding ascii = new System.Text.ASCIIEncoding();
-                    SN s = new SN(ascii.GetString(sn));
-
-                    return s;
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            else
-            {
-                return null;
-            }
-
-        }
-        static public Data GetData(byte[] input)
-        {
-            if (input.Length != 0)
-            {
-                if (input[6] == 65)
-                {
-                    var tmperature = BitConverter.ToInt16(input, 21) / 100.0;
-                    var mes = BitConverter.ToInt32(input, 23) / 100.0;
-                    var state = BitConverter.ToUInt16(input, 27);
-                    Data data = new Data(tmperature, mes, state);
-                    return data;
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            else
-            {
-                return null;
-            }
-
-        }
-        static public void FileWrite(string path, string hex)
-        {
-
-            FileStream myStream = new FileStream(@"Log.txt", FileMode.Append, FileAccess.Write);
-            StreamWriter sWriter = new StreamWriter(myStream);
-            sWriter.WriteLine(DateTime.Now + " Receive: " + hex);
-
-            sWriter.Close();
-            myStream.Close();
-
-        }
 
         public static List<string> GetChartXList()
         {

@@ -1,6 +1,7 @@
 ﻿using SignalCollectorPro;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.IO.Ports;
 using System.Linq;
 using System.Text;
@@ -23,6 +24,7 @@ namespace SignalCollectorPro
         void Received(SerialPortReceiveArgs e);
         void CollectCommand(int gap, int wait);
         bool DataRequest(int timeout);
+        void FileWrite(string path, string hex);
 
 
     }
@@ -102,15 +104,14 @@ namespace SignalCollectorPro
             }
             if (hexValue != "")
             {
-                BusinessLogics.FileWrite("Log.txt", hexValue);
+                FileWrite("Log.txt", hexValue);
             }
 
             if (tst.Length != 0)
             {
 
-                Data d = BusinessLogics.GetData(tst);
-
-                SN s = BusinessLogics.GetSN(tst);
+                Data d = GetData(tst);
+                SN s = GetSN(tst);
                 if (d != null)
                 {
                     BusinessLogics.SetCurrentSN(s);
@@ -125,7 +126,56 @@ namespace SignalCollectorPro
 
         }
 
+        private SN GetSN(byte[] input)
+        {
+            if (input.Length != 0)
+            {
+                if (input[6] == 65)
+                {
+                    byte[] sn = new byte[14];
+                    for (int i = 0; i < 14; i++)
+                    {
+                        sn[i] = input[7 + i];
+                    }
 
+                    ASCIIEncoding ascii = new System.Text.ASCIIEncoding();
+                    SN s = new SN(ascii.GetString(sn));
+
+                    return s;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                return null;
+            }
+
+        }
+        private Data GetData(byte[] input)
+        {
+            if (input.Length != 0)
+            {
+                if (input[6] == 65)
+                {
+                    var tmperature = BitConverter.ToInt16(input, 21) / 100.0;
+                    var mes = BitConverter.ToInt32(input, 23) / 100.0;
+                    var state = BitConverter.ToUInt16(input, 27);
+                    Data data = new Data(tmperature, mes, state);
+                    return data;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                return null;
+            }
+        }
 
 
 
@@ -144,7 +194,17 @@ namespace SignalCollectorPro
 
             //}
         }
+        public void FileWrite(string path, string hex)
+        {
 
+            FileStream myStream = new FileStream(@"Log.txt", FileMode.Append, FileAccess.Write);
+            StreamWriter sWriter = new StreamWriter(myStream);
+            sWriter.WriteLine(DateTime.Now + " Receive: " + hex);
+
+            sWriter.Close();
+            myStream.Close();
+
+        }
         public SerialPort GetPort()
         {
             return Core._mySerialPort;
@@ -159,7 +219,7 @@ namespace SignalCollectorPro
     }
 
     public class PeriodicModeService : SerialPortService
-    {    
+    {
         private static ManualResetEvent _collectDone = new ManualResetEvent(false);
         public static List<double> _temperature = new List<double>();
         public static List<string> _time = new List<string>();
@@ -233,13 +293,13 @@ SerialDataReceivedEventArgs e)
             }
             if (hexValue != "")
             {
-                BusinessLogics.FileWrite("Log.txt", hexValue);
+                FileWrite("Log.txt", hexValue);
             }
 
             if (tst.Length != 0)
             {
-                Data d = BusinessLogics.GetData(tst);
-                SN s = BusinessLogics.GetSN(tst);
+                Data d = GetData(tst);
+                SN s = GetSN(tst);
                 if (d != null)
                 {
                     _temperature.Add(double.Parse(d.GetTemperature()));
@@ -256,7 +316,67 @@ SerialDataReceivedEventArgs e)
                 Received(ev);
             }
         }
+        private SN GetSN(byte[] input)
+        {
+            if (input.Length != 0)
+            {
+                if (input[6] == 65)
+                {
+                    byte[] sn = new byte[14];
+                    for (int i = 0; i < 14; i++)
+                    {
+                        sn[i] = input[7 + i];
+                    }
 
+                    ASCIIEncoding ascii = new System.Text.ASCIIEncoding();
+                    SN s = new SN(ascii.GetString(sn));
+
+                    return s;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                return null;
+            }
+
+        }
+        private Data GetData(byte[] input)
+        {
+            if (input.Length != 0)
+            {
+                if (input[6] == 65)
+                {
+                    var tmperature = BitConverter.ToInt16(input, 21) / 100.0;
+                    var mes = BitConverter.ToInt32(input, 23) / 100.0;
+                    var state = BitConverter.ToUInt16(input, 27);
+                    Data data = new Data(tmperature, mes, state);
+                    return data;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public void FileWrite(string path, string hex)
+        {
+
+            FileStream myStream = new FileStream(@"Log.txt", FileMode.Append, FileAccess.Write);
+            StreamWriter sWriter = new StreamWriter(myStream);
+            sWriter.WriteLine(DateTime.Now + " Receive: " + hex);
+
+            sWriter.Close();
+            myStream.Close();
+
+        }
         public void CollectCommand(int gap, int wait)
         {
             throw new NotImplementedException();

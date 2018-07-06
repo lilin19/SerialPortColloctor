@@ -47,7 +47,7 @@ namespace SignalCollectorPro
             public double _realtemperature;
             public double _realmeasurement;
             public DateTime _time;
-            public SaveMeasure(double temp,double measure, double realtemp, double realmeasure)
+            public SaveMeasure(double temp, double measure, double realtemp, double realmeasure)
             {
                 _temperature = temp;
                 _measurement = measure;
@@ -60,7 +60,7 @@ namespace SignalCollectorPro
         public class SN
         {
             public string sn;
-
+     
             public SN(string sn)
             {
                 this.sn = sn;
