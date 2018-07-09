@@ -32,6 +32,15 @@ namespace SignalCollectorPro
             else
             { return "无数据"; }
         }
+        public static byte[] GetCurrentStateInstance()
+        {
+            if (DataCentre.CurrentData != null)
+            {
+                return DataCentre.CurrentData._error;
+            }
+            else
+            { return null; }
+        }
 
 
         public static string GetCurrentSN()

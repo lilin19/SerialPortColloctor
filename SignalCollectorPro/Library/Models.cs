@@ -12,10 +12,10 @@ namespace SignalCollectorPro
         {
             public double _temperature;
             public double _measurement;
-            public double _error;
+            public byte[] _error;
             public DateTime _time;
 
-            public Data(double temp, double measurement, double err)
+            public Data(double temp, double measurement, byte[] err)
             {
                 this._temperature = temp;
                 this._measurement = measurement;

@@ -209,7 +209,9 @@ namespace SignalCollectorPro
                     {
                         var tmperature = BitConverter.ToInt16(input, 21) / 100.0;
                         var mes = BitConverter.ToInt32(input, 23) / 100.0;
-                        var state = BitConverter.ToUInt16(input, 27);
+                        byte[] state = new byte[2];
+                        state[0] = input[27];
+                        state[1] = input[28];
                         Data data = new Data(tmperature, mes, state);
                         return data;
                     }
@@ -370,7 +372,6 @@ SerialDataReceivedEventArgs e)
                         {
                             sn[i] = input[7 + i];
                         }
-
                         ASCIIEncoding ascii = new System.Text.ASCIIEncoding();
                         SN s = new SN(ascii.GetString(sn));
 
@@ -402,7 +403,9 @@ SerialDataReceivedEventArgs e)
                     {
                         var tmperature = BitConverter.ToInt16(input, 21) / 100.0;
                         var mes = BitConverter.ToInt32(input, 23) / 100.0;
-                        var state = BitConverter.ToUInt16(input, 27);
+                        byte[] state = new byte[2];
+                        state[0] = input[27];
+                        state[1] = input[28];
                         Data data = new Data(tmperature, mes, state);
                         return data;
                     }
@@ -410,7 +413,6 @@ SerialDataReceivedEventArgs e)
                     {
                         return null;
                     }
-
                 }
                 else
                 {

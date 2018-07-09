@@ -125,8 +125,6 @@ namespace SignalCollectorPro
                 {
 
                 }
-
-
             }
             else
             {
@@ -138,14 +136,14 @@ namespace SignalCollectorPro
         {
             Invoke(new MethodInvoker(() =>
            {
-
                Length.Text = BusinessLogics.GetCurrentSignalLength();
                Time.Text = BusinessLogics.GetCurrentSignalTime();
                Mea.Text = BusinessLogics.GetCurrentMeasurement();
                Temp.Text = BusinessLogics.GetCurrentTemperature();
                SignalContent.Text = BusinessLogics.GetCurrentSignal();
                SNCode.Text = BusinessLogics.GetCurrentSN();
-               state.Text = BusinessLogics.GetCurrentState();
+               byte[] lil = BusinessLogics.GetCurrentStateInstance();
+               state.Text = (Convert.ToString(lil[0],2).PadLeft(8, '0')+ Convert.ToString(lil[1], 2).PadLeft(8, '0'));
            }));
         }
 
@@ -242,11 +240,20 @@ namespace SignalCollectorPro
 
         private void button6_Click(object sender, EventArgs e)
         {
-            button7.Enabled = true;
-            label9.ForeColor = Color.White;
-            string port = Ports.SelectedItem.ToString();
-            int portindex = Ports.SelectedIndex;
-            senden(port, portindex);
+            if (Ports.SelectedIndex > -1)
+            {
+                MessageBox.Show(String.Format("你选择了串口 '{0}'", Ports.SelectedItem));
+                button7.Enabled = true;
+                label9.ForeColor = Color.White;
+                string port = Ports.SelectedItem.ToString();
+                int portindex = Ports.SelectedIndex;
+                senden(port, portindex);
+            }
+            else
+            {
+                MessageBox.Show("Please select a port first");
+            }
+
         }
 
         private void senden(string port, int portindex)
@@ -254,7 +261,6 @@ namespace SignalCollectorPro
             if (portindex > -1)
             {
                 button6.Enabled = false;
-                //MessageBox.Show(String.Format("向串口 '{0}' 发送采集指令", port));
                 try
                 {
                     label8.ForeColor = Color.Blue;   
@@ -299,7 +305,8 @@ namespace SignalCollectorPro
                     Temp.Text = BusinessLogics.GetCurrentTemperature();
                     SignalContent.Text = BusinessLogics.GetCurrentSignal();
                     SNCode.Text = BusinessLogics.GetCurrentSN();
-                    state.Text = BusinessLogics.GetCurrentState();
+                    byte[] lil = BusinessLogics.GetCurrentStateInstance();
+                    state.Text = (Convert.ToString(lil[0], 2).PadLeft(8, '0') + Convert.ToString(lil[1], 2).PadLeft(8, '0'));
                 }
                 else
                 {
@@ -323,6 +330,14 @@ namespace SignalCollectorPro
             }
             _sps.StopService();
             _sps = null;
+        }
+
+        private void Form1_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            // Determine if text has changed in the textbox by comparing to original text.
+            th.Abort();
+            th = null;
+            Application.Exit();
         }
     }
 
