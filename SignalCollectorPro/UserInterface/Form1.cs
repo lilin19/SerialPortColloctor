@@ -142,8 +142,26 @@ namespace SignalCollectorPro
                Temp.Text = BusinessLogics.GetCurrentTemperature();
                SignalContent.Text = BusinessLogics.GetCurrentSignal();
                SNCode.Text = BusinessLogics.GetCurrentSN();
-               byte[] lil = BusinessLogics.GetCurrentStateInstance();
-               state.Text = (Convert.ToString(lil[0],2).PadLeft(8, '0')+ Convert.ToString(lil[1], 2).PadLeft(8, '0'));
+               switch (e.type)
+               {
+                   case 0:
+                       byte[] lil = BusinessLogics.GetCurrentStateInstance();
+                       if (lil != null)
+                       {
+                           state.Text = (Convert.ToString(lil[0], 2).PadLeft(8, '0') + Convert.ToString(lil[1], 2).PadLeft(8, '0'));
+                       }
+                       break;
+                   case 1:
+                       state.Text = "命令类型错误";
+                       break;
+                   case 8:
+                       state.Text = "CRC 检验错误";
+                       break;
+                   case 7:
+                       state.Text = "长度/协议头错误";
+                       break;
+               }
+
            }));
         }
 
@@ -305,14 +323,33 @@ namespace SignalCollectorPro
                     Temp.Text = BusinessLogics.GetCurrentTemperature();
                     SignalContent.Text = BusinessLogics.GetCurrentSignal();
                     SNCode.Text = BusinessLogics.GetCurrentSN();
-                    byte[] lil = BusinessLogics.GetCurrentStateInstance();
-                    state.Text = (Convert.ToString(lil[0], 2).PadLeft(8, '0') + Convert.ToString(lil[1], 2).PadLeft(8, '0'));
+                    switch (e.type)
+                    {
+                        case 0:
+                            byte[] lil = BusinessLogics.GetCurrentStateInstance();
+                            if (lil != null)
+                            {
+                                state.Text = (Convert.ToString(lil[0], 2).PadLeft(8, '0') + Convert.ToString(lil[1], 2).PadLeft(8, '0'));
+                            }
+                            break;
+                        case 1:
+                            state.Text = "命令类型错误";
+                            break;
+                        case 8:
+                            state.Text = "CRC 检验错误";
+                            break;
+                        case 7:
+                            state.Text = "长度/协议头错误";
+                            break;
+                    }
+
                 }
                 else
                 {
                     label8.ForeColor = Color.Red;
                     label9.ForeColor = Color.Red;
-                    _sps.StopService();
+                    //state.Text = "Timeout";
+                    _sps.StopService();   
                 }
             }));
         }

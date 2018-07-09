@@ -52,7 +52,7 @@ namespace SignalCollectorPro
                 if (response == false)
                 {
                     ReleasePort();
-                    SerialPortReceiveArgs ev = new SerialPortReceiveArgs(null, false, _port);
+                    SerialPortReceiveArgs ev = new SerialPortReceiveArgs(null, false, _port, 9);
                     Received(ev);
                 }
                 else
@@ -63,8 +63,6 @@ namespace SignalCollectorPro
                 TimeSpan span = TimeSpan.FromSeconds(5) - (end - start);
                 Thread.Sleep(span);
             }
-            
-
             return true;
         }
 
@@ -114,8 +112,6 @@ namespace SignalCollectorPro
             Core.StartListen(Core._mySerialPort, new SerialDataReceivedEventHandler(DataReceivedHandler));
         }
 
-
-
         private void DataReceivedHandler(
   object receiver,
   SerialDataReceivedEventArgs e)
@@ -144,87 +140,79 @@ namespace SignalCollectorPro
                 FileWrite("Log.txt", hexValue);
             }
 
-            if (tst.Length != 0)
+
+
+            if (tst.Length == 32 && tst[2] == 28)
             {
-
-                Data d = GetData(tst);
-                SN s = GetSN(tst);
-                BusinessLogics.SetCurrentSN(s);
-                BusinessLogics.SetCurrentData(d);
-                _collectDone.Set();
-                SerialPortReceiveArgs ev = new SerialPortReceiveArgs(tst, true, Core.port);
-                Received(ev);
-                if (d != null)
+                byte[] crc = (byte[])tst.Clone();
+                Core.ModRTU_CRC(ref crc, 30);
+                if (crc[30]==tst[30] && crc[31]==tst[31])
                 {
-
-                    _temperature.Add(double.Parse(BusinessLogics.GetCurrentTemperature()));
-                    _time.Add(BusinessLogics.GetCurrentSignalTime());
-
+                    Data d = GetData(tst);
+                    SN s = GetSN(tst);
+                    BusinessLogics.SetCurrentSN(s);
+                    BusinessLogics.SetCurrentData(d);
+                    if (d == null)
+                    {
+                        SerialPortReceiveArgs eb = new SerialPortReceiveArgs(tst, true, Core.port, 1);
+                        Received(eb);
+                    }
+                    else
+                    {
+                        _temperature.Add(double.Parse(BusinessLogics.GetCurrentTemperature()));
+                        _time.Add(BusinessLogics.GetCurrentSignalTime());
+                        SerialPortReceiveArgs ev = new SerialPortReceiveArgs(tst, true, Core.port, 0);
+                        Received(ev);
+                    }
+                }
+                else
+                {
+                    // throw (new Exception());
+                    BusinessLogics.SetCurrentSN(null);
+                    BusinessLogics.SetCurrentData(null);
+                    SerialPortReceiveArgs ev = new SerialPortReceiveArgs(tst, true, Core.port, 8);
+                    Received(ev);
                 }
             }
-
+            else
+            {
+                SerialPortReceiveArgs ev = new SerialPortReceiveArgs(tst, true, Core.port, 7);
+                Received(ev);
+            }
+            _collectDone.Set();
         }
 
         private SN GetSN(byte[] input)
         {
-            if (input.Length != 0)
+            if (input[6] == 65)
             {
-                if (input.Length == 32) { 
-                if (input[6] == 65)
+                byte[] sn = new byte[14];
+                for (int i = 0; i < 14; i++)
                 {
-                    byte[] sn = new byte[14];
-                    for (int i = 0; i < 14; i++)
-                    {
-                        sn[i] = input[7 + i];
-                    }
+                    sn[i] = input[7 + i];
+                }
 
-                    ASCIIEncoding ascii = new System.Text.ASCIIEncoding();
-                    SN s = new SN(ascii.GetString(sn));
+                ASCIIEncoding ascii = new System.Text.ASCIIEncoding();
+                SN s = new SN(ascii.GetString(sn));
 
-                    return s;
-                }
-                else
-                {
-                    return null;
-                }
-                }
-                else
-                {
-                    return null;
-                }
+                return s;
             }
             else
             {
                 return null;
             }
-
         }
         private Data GetData(byte[] input)
         {
-            if (input.Length != 0)
+            if (input[6] == 65)
             {
-                if (input.Length == 32)
-                {
-                    if (input[6] == 65)
-                    {
-                        var tmperature = BitConverter.ToInt16(input, 21) / 100.0;
-                        var mes = BitConverter.ToInt32(input, 23) / 100.0;
-                        byte[] state = new byte[2];
-                        state[0] = input[27];
-                        state[1] = input[28];
-                        Data data = new Data(tmperature, mes, state);
-                        return data;
-                    }
-                    else
-                    {
-                        return null;
-                    }
-
-                }
-                else
-                {
-                    return null;
-                }
+                var tmperature = BitConverter.ToInt16(input, 22) / 100.0;
+                var mes = BitConverter.ToInt32(input, 24) / 100.0;
+                byte[] state = new byte[2];
+                state[0] = input[28];
+                state[1] = input[29];
+                Data data = new Data(tmperature, mes, state);
+                return data;
             }
             else
             {
@@ -339,90 +327,80 @@ SerialDataReceivedEventArgs e)
                 FileWrite("Log.txt", hexValue);
             }
 
-            if (tst.Length != 0)
+            if (tst.Length == 32 && tst[2] == 28)
             {
-                Data d = GetData(tst);
-                SN s = GetSN(tst);
-                if (d != null)
+                byte[] crc = (byte[])tst.Clone();
+                Core.ModRTU_CRC(ref crc, 30);
+                if (crc == tst)
                 {
-                    _temperature.Add(double.Parse(d.GetTemperature()));
-                    _time.Add(BusinessLogics.GetCurrentSignalTime());
-                    BusinessLogics.SetCurrentData(d);
+                    Data d = GetData(tst);
+                    SN s = GetSN(tst);
                     BusinessLogics.SetCurrentSN(s);
+                    BusinessLogics.SetCurrentData(d);
+                    if (d == null)
+                    {
+                        SerialPortReceiveArgs eb = new SerialPortReceiveArgs(tst, true, Core.port, 1);
+                        Received(eb);
+                    }
+                    else
+                    {
+                        _temperature.Add(double.Parse(BusinessLogics.GetCurrentTemperature()));
+                        _time.Add(BusinessLogics.GetCurrentSignalTime());
+                        SerialPortReceiveArgs ev = new SerialPortReceiveArgs(tst, true, Core.port, 0);
+                        Received(ev);
+                    }
                 }
                 else
                 {
-                    BusinessLogics.SetCurrentData(null);
+                    // throw (new Exception());
                     BusinessLogics.SetCurrentSN(null);
+                    BusinessLogics.SetCurrentData(null);
+                    SerialPortReceiveArgs ev = new SerialPortReceiveArgs(tst, true, Core.port, 8);
+                    Received(ev);
                 }
-                SerialPortReceiveArgs ev = new SerialPortReceiveArgs(tst, true, Core.port);
+            }
+            else
+            {
+                SerialPortReceiveArgs ev = new SerialPortReceiveArgs(tst, true, Core.port, 7);
                 Received(ev);
             }
         }
         private SN GetSN(byte[] input)
         {
-            if (input.Length != 0)
+            if (input[6] == 65)
             {
-                if (input.Length == 32)
+                byte[] sn = new byte[14];
+                for (int i = 0; i < 14; i++)
                 {
-                    if (input[6] == 65)
-                    {
-                        byte[] sn = new byte[14];
-                        for (int i = 0; i < 14; i++)
-                        {
-                            sn[i] = input[7 + i];
-                        }
-                        ASCIIEncoding ascii = new System.Text.ASCIIEncoding();
-                        SN s = new SN(ascii.GetString(sn));
+                    sn[i] = input[7 + i];
+                }
+                ASCIIEncoding ascii = new System.Text.ASCIIEncoding();
+                SN s = new SN(ascii.GetString(sn));
 
-                        return s;
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                }
-                else
-                {
-                    return null;
-                }
+                return s;
             }
             else
             {
                 return null;
             }
-
         }
         private Data GetData(byte[] input)
         {
-            if (input.Length != 0)
+            if (input[6] == 65)
             {
-                if (input.Length == 32)
-                {
-                    if (input[6] == 65)
-                    {
-                        var tmperature = BitConverter.ToInt16(input, 21) / 100.0;
-                        var mes = BitConverter.ToInt32(input, 23) / 100.0;
-                        byte[] state = new byte[2];
-                        state[0] = input[27];
-                        state[1] = input[28];
-                        Data data = new Data(tmperature, mes, state);
-                        return data;
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                }
-                else
-                {
-                    return null;
-                }
+                var tmperature = BitConverter.ToInt16(input, 21) / 100.0;
+                var mes = BitConverter.ToInt32(input, 23) / 100.0;
+                byte[] state = new byte[2];
+                state[0] = input[27];
+                state[1] = input[28];
+                Data data = new Data(tmperature, mes, state);
+                return data;
             }
             else
             {
                 return null;
             }
+
         }
         private void FileWrite(string path, string hex)
         {
@@ -443,13 +421,15 @@ SerialDataReceivedEventArgs e)
         private byte[] tst;
         public bool response;
         public string port;
+        public int type;
         //Constructor.
         //
-        public SerialPortReceiveArgs(byte[] tst, bool response, string port)
+        public SerialPortReceiveArgs(byte[] tst, bool response, string port, int type)
         {
             this.tst = tst;
             this.response = response;
             this.port = port;
+            this.type = type;
         }
         public byte[] Content
         {

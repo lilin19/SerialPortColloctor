@@ -12,6 +12,31 @@ namespace EventSample
 
         //Constructor.
         //
+
+        public void ModRTU_CRC(ref byte[] buf, int len)
+        {
+            UInt16 crc = 0xFFFF;
+
+            for (int pos = 0; pos < len; pos++)
+            {
+                crc ^= (UInt16)buf[pos]; // XOR byte into least sig. byte of crc
+
+                for (int i = 8; i != 0; i--)
+                { // Loop over each bit
+                    if ((crc & 0x0001) != 0)
+                    { // If the LSB is set
+                        crc >>= 1; // Shift right and XOR 0xA001
+                        crc ^= 0xA001;
+                    }
+                    else // Else LSB is not set
+                        crc >>= 1; // Just shift right
+                }
+            }
+            byte[] o = BitConverter.GetBytes(crc);
+            // Note, this number has low and high bytes swapped, so use it accordingly (or swap bytes)
+            buf[len] = o[1];
+            buf[len + 1] = o[0];
+        }
         public AlarmEventArgs(bool snoozePressed, int nrings)
         {
             this.snoozePressed = snoozePressed;
