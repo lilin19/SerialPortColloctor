@@ -11,11 +11,13 @@ using static SignalCollectorPro.DataObjects;
 
 namespace SignalCollectorPro
 {
-    public delegate void SerialPortReceivedHandler(object sender, SerialPortReceiveArgs e);
+    public delegate void ErrorReceivedHandler(object sender, PacketErrorReceiveArgs e);
+    public delegate void DataReceivedHandler(object sender, PacketReceiveArgs e);
 
     interface SerialPortService
     {
-        event SerialPortReceivedHandler Receive;
+        event ErrorReceivedHandler ReceiveError;
+        event DataReceivedHandler ReceiveSuccess;
         bool StartService();
         void StopService();
         bool IsOnService { get; }
@@ -27,10 +29,11 @@ namespace SignalCollectorPro
         public static List<double> _temperature = new List<double>();
         public static List<string> _time = new List<string>();
         private string _port;
+        private bool _canReceive;
         public bool IsOnService { get => Core._mySerialPort.IsOpen; }
 
-        public event SerialPortReceivedHandler Receive;
-
+        public event ErrorReceivedHandler ReceiveError;
+        public event DataReceivedHandler ReceiveSuccess;
         public bool StartService()
         {
             bool response = false;
@@ -47,13 +50,14 @@ namespace SignalCollectorPro
                 CollectCommand(100, 3000);
                 Core._mySerialPort.DiscardInBuffer();
                 Listen();
+                this._canReceive = true;
                 response = DataRequest(1000);
-
+                this._canReceive = false;
                 if (response == false)
                 {
                     ReleasePort();
-                    SerialPortReceiveArgs ev = new SerialPortReceiveArgs(null, false, _port, 9);
-                    Received(ev);
+                    PacketErrorReceiveArgs ev = new PacketErrorReceiveArgs(null,0, false, _port, 9);
+                    RaiseErrorHandler(ev);
                 }
                 else
                 {
@@ -119,27 +123,17 @@ namespace SignalCollectorPro
             Thread.Sleep(50);
             SerialPort sp = (SerialPort)receiver;
             byte[] tst = new byte[sp.BytesToRead];
+            if (_canReceive==false){
+                return;
+            }
             //string get = sp.ReadExisting();
             sp.Read(tst, 0, sp.BytesToRead);
             //Int16 get = BitConverter.ToInt16(tst,0);     
             string hexValue = BitConverter.ToString(tst);
-            if (tst.Length != 0)
-            {
-                BusinessLogics.SetCurrentSignalTime();
-                BusinessLogics.SetCurrentSignalLength(tst.Length);
-                //Length.Text = tst.Length.ToString();
-                string y = "";
-                for (int i = 0; i < tst.Length; i++)
-                {
-                    y += " " + tst[i].ToString();
-                }
-                BusinessLogics.SetCurrentSignal(hexValue);
-            }
             if (hexValue != "")
             {
                 FileWrite("Log.txt", hexValue);
             }
-
 
 
             if (tst.Length == 32 && tst[2] == 28)
@@ -150,34 +144,28 @@ namespace SignalCollectorPro
                 {
                     Data d = GetData(tst);
                     SN s = GetSN(tst);
-                    BusinessLogics.SetCurrentSN(s);
-                    BusinessLogics.SetCurrentData(d);
                     if (d == null)
                     {
-                        SerialPortReceiveArgs eb = new SerialPortReceiveArgs(tst, true, Core.port, 1);
-                        Received(eb);
+                        PacketErrorReceiveArgs eb = new PacketErrorReceiveArgs(tst, tst.Length,true, Core.port, 1);
+                        RaiseErrorHandler(eb);
                     }
                     else
                     {
-                        _temperature.Add(double.Parse(BusinessLogics.GetCurrentTemperature()));
-                        _time.Add(BusinessLogics.GetCurrentSignalTime());
-                        SerialPortReceiveArgs ev = new SerialPortReceiveArgs(tst, true, Core.port, 0);
-                        Received(ev);
+                        PacketReceiveArgs ev = new PacketReceiveArgs(tst, tst.Length, true,d,s);
+                        RaiseReceiveHandler(ev);
                     }
                 }
                 else
                 {
                     // throw (new Exception());
-                    BusinessLogics.SetCurrentSN(null);
-                    BusinessLogics.SetCurrentData(null);
-                    SerialPortReceiveArgs ev = new SerialPortReceiveArgs(tst, true, Core.port, 8);
-                    Received(ev);
+                    PacketErrorReceiveArgs ev = new PacketErrorReceiveArgs(tst,tst.Length, true, Core.port, 8);
+                    RaiseErrorHandler(ev);
                 }
             }
             else
             {
-                SerialPortReceiveArgs ev = new SerialPortReceiveArgs(tst, true, Core.port, 7);
-                Received(ev);
+                PacketErrorReceiveArgs ev = new PacketErrorReceiveArgs(tst,tst.Length, true, Core.port, 7);
+                RaiseErrorHandler(ev);
             }
             _collectDone.Set();
         }
@@ -244,10 +232,16 @@ namespace SignalCollectorPro
             return Core._mySerialPort;
         }
 
-        private void Received(SerialPortReceiveArgs e)
+        private void RaiseErrorHandler(PacketErrorReceiveArgs e)
         {
-            Receive?.Invoke(this, e);
+            ReceiveError?.Invoke(this, e);
         }
+
+        private void RaiseReceiveHandler(PacketReceiveArgs e)
+        {
+            ReceiveSuccess?.Invoke(this, e);
+        }
+
 
     }
 
@@ -256,7 +250,9 @@ namespace SignalCollectorPro
         private static ManualResetEvent _collectDone = new ManualResetEvent(false);
         public static List<double> _temperature = new List<double>();
         public static List<string> _time = new List<string>();
-        public event SerialPortReceivedHandler Receive;
+        public event ErrorReceivedHandler ReceiveError;
+        public event DataReceivedHandler ReceiveSuccess;
+
         public bool IsOnService { get => Core._mySerialPort.IsOpen; }
         public bool StartService()
         {
@@ -284,11 +280,6 @@ namespace SignalCollectorPro
             Core.StartListen(Core._mySerialPort, new SerialDataReceivedEventHandler(DataReceivedHandler));
         }
 
-        private void Received(SerialPortReceiveArgs e)
-        {
-            Receive?.Invoke(this, e);
-        }
-
         private void ReleasePort()
         {
             Core._mySerialPort.Dispose();
@@ -310,59 +301,40 @@ SerialDataReceivedEventArgs e)
             sp.Read(tst, 0, sp.BytesToRead);
             //Int16 get = BitConverter.ToInt16(tst,0);     
             string hexValue = BitConverter.ToString(tst);
-            if (tst.Length != 0)
-            {
-                BusinessLogics.SetCurrentSignalTime();
-                BusinessLogics.SetCurrentSignalLength(tst.Length);
-                //Length.Text = tst.Length.ToString();
-                string y = "";
-                for (int i = 0; i < tst.Length; i++)
-                {
-                    y += " " + tst[i].ToString();
-                }
-                BusinessLogics.SetCurrentSignal(hexValue);
-            }
             if (hexValue != "")
             {
                 FileWrite("Log.txt", hexValue);
             }
-
             if (tst.Length == 32 && tst[2] == 28)
             {
                 byte[] crc = (byte[])tst.Clone();
                 Core.ModRTU_CRC(ref crc, 30);
-                if (crc == tst)
+                if (crc[30] == tst[30] && crc[31] == tst[31])
                 {
                     Data d = GetData(tst);
                     SN s = GetSN(tst);
-                    BusinessLogics.SetCurrentSN(s);
-                    BusinessLogics.SetCurrentData(d);
                     if (d == null)
                     {
-                        SerialPortReceiveArgs eb = new SerialPortReceiveArgs(tst, true, Core.port, 1);
-                        Received(eb);
+                        PacketErrorReceiveArgs eb = new PacketErrorReceiveArgs(tst,tst.Length, true, Core.port, 1);
+                        RaiseErrorHandler(eb);
                     }
                     else
                     {
-                        _temperature.Add(double.Parse(BusinessLogics.GetCurrentTemperature()));
-                        _time.Add(BusinessLogics.GetCurrentSignalTime());
-                        SerialPortReceiveArgs ev = new SerialPortReceiveArgs(tst, true, Core.port, 0);
-                        Received(ev);
+                        PacketReceiveArgs ev = new PacketReceiveArgs(tst,tst.Length, true,d,s);
+                        RaiseReceiveHandler(ev);
                     }
                 }
                 else
                 {
                     // throw (new Exception());
-                    BusinessLogics.SetCurrentSN(null);
-                    BusinessLogics.SetCurrentData(null);
-                    SerialPortReceiveArgs ev = new SerialPortReceiveArgs(tst, true, Core.port, 8);
-                    Received(ev);
+                    PacketErrorReceiveArgs ev = new PacketErrorReceiveArgs(tst,tst.Length, true, Core.port, 8);
+                    RaiseErrorHandler(ev);
                 }
             }
             else
             {
-                SerialPortReceiveArgs ev = new SerialPortReceiveArgs(tst, true, Core.port, 7);
-                Received(ev);
+                PacketErrorReceiveArgs ev = new PacketErrorReceiveArgs(tst,tst.Length, true, Core.port, 7);
+                RaiseErrorHandler(ev);
             }
         }
         private SN GetSN(byte[] input)
@@ -413,27 +385,62 @@ SerialDataReceivedEventArgs e)
             myStream.Close();
 
         }
+        private void RaiseErrorHandler(PacketErrorReceiveArgs e)
+        {
+            ReceiveError?.Invoke(this, e);
+        }
 
+        private void RaiseReceiveHandler(PacketReceiveArgs e)
+        {
+            ReceiveSuccess?.Invoke(this, e);
+        }
     }
-    public class SerialPortReceiveArgs : EventArgs
+    public class PacketErrorReceiveArgs : EventArgs
     {
 
-        private byte[] tst;
+        public byte[] tst;
         public bool response;
         public string port;
+        public int length;
         public int type;
         //Constructor.
         //
-        public SerialPortReceiveArgs(byte[] tst, bool response, string port, int type)
+        public PacketErrorReceiveArgs(byte[] tst, int length ,bool response, string port, int type)
         {
             this.tst = tst;
             this.response = response;
             this.port = port;
             this.type = type;
+            this.length = length;
         }
         public byte[] Content
         {
             get { return tst; }
         }
     }
+
+    public class PacketReceiveArgs : EventArgs
+    {
+
+        public byte[] tst;
+        public bool response;
+        public int length;
+        public Data pack;
+        public SN sn;
+        //Constructor.
+        //
+        public PacketReceiveArgs(byte[] tst,int length, bool response, Data pack,SN sn)
+        {
+            this.tst = tst;
+            this.response = response;
+            this.length = length;
+            this.pack = pack;
+            this.sn = sn;
+        }
+        public byte[] Content
+        {
+            get { return tst; }
+        }
+    }
+
 }

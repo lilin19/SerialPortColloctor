@@ -31,7 +31,7 @@ namespace SignalCollectorPro
             _mt.Interval = 1;
             _mt.Start();
 
-
+            
             // Set the view to show details.
             Screen.View = View.Details;
             // Allow the user to edit item text.
@@ -110,7 +110,8 @@ namespace SignalCollectorPro
                 try
                 {
                     _sps = new PeriodicModeDriver(Ports.SelectedItem.ToString());
-                    _sps.Receive += refresh;
+                    _sps.ReceiveError += refresh;
+                    _sps.ReceiveSuccess += ReceiveRequest;
                     _sps.StartService();
                     if (_sps.IsOnService == true)
                     {
@@ -132,25 +133,33 @@ namespace SignalCollectorPro
             }
         }
 
-        void refresh(object sender, SerialPortReceiveArgs e)
+        void refresh(object sender, PacketErrorReceiveArgs e)
         {
             Invoke(new MethodInvoker(() =>
-           {
-               Length.Text = BusinessLogics.GetCurrentSignalLength();
-               Time.Text = BusinessLogics.GetCurrentSignalTime();
-               Mea.Text = BusinessLogics.GetCurrentMeasurement();
-               Temp.Text = BusinessLogics.GetCurrentTemperature();
-               SignalContent.Text = BusinessLogics.GetCurrentSignal();
-               SNCode.Text = BusinessLogics.GetCurrentSN();
-               switch (e.type)
+           {  
+               Mea.Text = "无数据";
+               Temp.Text = "无数据";
+               SNCode.Text = "无数据";
+               if (e.response)
                {
-                   case 0:
-                       byte[] lil = BusinessLogics.GetCurrentStateInstance();
-                       if (lil != null)
-                       {
-                           state.Text = (Convert.ToString(lil[0], 2).PadLeft(8, '0') + Convert.ToString(lil[1], 2).PadLeft(8, '0'));
-                       }
-                       break;
+                   SignalContent.Text = BitConverter.ToString(e.Content);
+                   Time.Text = DateTime.Now.ToString();
+                   label8.ForeColor = Color.Red;
+                   label9.ForeColor = Color.White;
+                   Length.Text = e.length.ToString();    
+               }
+               else
+               {
+                   Length.Text = "无数据";
+                   SignalContent.Text = "无数据";
+                   Time.Text = "无数据";
+                   label8.ForeColor = Color.Red;
+                   label9.ForeColor = Color.Red;
+                   state.Text = "超时";
+               }
+
+               switch (e.type)
+               { 
                    case 1:
                        state.Text = "命令类型错误";
                        break;
@@ -265,92 +274,64 @@ namespace SignalCollectorPro
                 label9.ForeColor = Color.White;
                 string port = Ports.SelectedItem.ToString();
                 int portindex = Ports.SelectedIndex;
-                senden(port, portindex);
-            }
-            else
-            {
-                MessageBox.Show("Please select a port first");
-            }
-
-        }
-
-        private void senden(string port, int portindex)
-        {
-            if (portindex > -1)
-            {
-                button6.Enabled = false;
-                try
+                if (portindex > -1)
                 {
-                    label8.ForeColor = Color.Blue;   
-                    th = new Thread(() =>
+                    button6.Enabled = false;
+                    try
                     {
-                        try {
-                        _sps = new RegularModeDriver(port);
-                        _sps.Receive += ReceiveRequest;
-                        _sps.StartService();
-                        }
-                        catch(Exception)
+                        label8.ForeColor = Color.Blue;
+                        th = new Thread(() =>
                         {
+                            try
+                            {
+                                _sps = new RegularModeDriver(port);
+                                _sps.ReceiveError += refresh;
+                                _sps.ReceiveSuccess += ReceiveRequest;
+                                _sps.StartService();
+                            }
+                            catch (Exception)
+                            {
 
-                        }
-                    });
-                    th.Start();
-                 
+                            }
+                        });
+                        th.Start();
+
+                    }
+                    catch (Exception)
+                    {
+                    }
                 }
-                catch (Exception)
+                else
                 {
+                    MessageBox.Show("Please select a port first");
                 }
+
             }
             else
             {
                 MessageBox.Show("Please select a port first");
             }
-         
+
+
+
         }
 
-        public void ReceiveRequest(object sender, SerialPortReceiveArgs e)
+
+        public void ReceiveRequest(object sender, PacketReceiveArgs e)
         {
             Invoke(new MethodInvoker(() =>
             {
                 label9.ForeColor = Color.White;
                 //MessageBox.Show(e.response.ToString());
-                if (e.response)
-                {
-                    label8.ForeColor = Color.Black;
-                    Length.Text = BusinessLogics.GetCurrentSignalLength();
-                    Time.Text = BusinessLogics.GetCurrentSignalTime();
-                    Mea.Text = BusinessLogics.GetCurrentMeasurement();
-                    Temp.Text = BusinessLogics.GetCurrentTemperature();
-                    SignalContent.Text = BusinessLogics.GetCurrentSignal();
-                    SNCode.Text = BusinessLogics.GetCurrentSN();
-                    switch (e.type)
-                    {
-                        case 0:
-                            byte[] lil = BusinessLogics.GetCurrentStateInstance();
-                            if (lil != null)
-                            {
-                                state.Text = (Convert.ToString(lil[0], 2).PadLeft(8, '0') + Convert.ToString(lil[1], 2).PadLeft(8, '0'));
-                            }
-                            break;
-                        case 1:
-                            state.Text = "命令类型错误";
-                            break;
-                        case 8:
-                            state.Text = "CRC 检验错误";
-                            break;
-                        case 7:
-                            state.Text = "长度/协议头错误";
-                            break;
-                    }
 
-                }
-                else
-                {
-                    label8.ForeColor = Color.Red;
-                    label9.ForeColor = Color.Red;
-                    //state.Text = "Timeout";
-                    _sps.StopService();   
-                }
+                    label8.ForeColor = Color.Green;
+                    Length.Text = e.length.ToString();
+                    Time.Text = DateTime.Now.ToString();
+                    Mea.Text = e.pack._measurement.ToString();
+                    Temp.Text = e.pack._temperature.ToString();
+                    SignalContent.Text = BitConverter.ToString(e.tst);
+                    SNCode.Text = e.sn.sn.ToString();
+                    state.Text = (Convert.ToString(e.pack._error[0], 2).PadLeft(8, '0') + Convert.ToString(e.pack._error[1], 2).PadLeft(8, '0'));     
             }));
         }
 

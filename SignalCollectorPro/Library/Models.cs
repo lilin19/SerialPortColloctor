@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SignalCollectorPro
 {
-    class DataObjects
+    public class DataObjects
     {
         public class Data
         {
